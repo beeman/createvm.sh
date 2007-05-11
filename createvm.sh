@@ -149,8 +149,6 @@ function DoOke() {
         echo -e "\033[1;32m[OK]\033[0;00m"
     fi
 }
-<<<<<<< .mine
-=======
 function DoOsList() {
     echo "List of Guest Operating Systems:"
     for OS in ${SUPPORT_OS[@]}
@@ -158,7 +156,6 @@ function DoOsList() {
     	echo " - " $OS;
     done
 }
->>>>>>> .r36
 function DoSuppOsTest(){
 	OS_SUPPORTED="no";
 	for OS in ${SUPPORT_OS[@]}
@@ -264,39 +261,14 @@ if [ "$VM_USE_SND" = "" ]; 	then VM_USE_SND=FALSE; fi
 if [ "$VM_USE_CDD" = "" ]; 	then VM_USE_CDD=FALSE; fi
 if [ "$VM_USE_FDD" = "" ]; 	then VM_USE_FDD=FALSE; fi
 
-<<<<<<< .mine
-WRKDIR=$WRKPATH/$VM_OS_TYPE-$VM_RAM-WORKDIR
-=======
 VM_CONF_VER=8
 VM_VMHW_VER=3
 VM_DISK_SIZE=$VM_DISK_SIZE'G'
 WRKDIR=$WRKPATH/$VM_OS_TYPE
->>>>>>> .r36
 VM_DISK_NAME=$VM_DISK_TYPE-$VM_OS_TYPE.vmdk
 VM_VMX_FILE=$WRKDIR/$VM_OS_TYPE.vmx
 
 DoEcho "I am about to create this Virtual Machine:"
-<<<<<<< .mine
-	echo -e "      Virtual OS    :\033[1m $VM_OS_TYPE \033[0m"
-	echo -e "      Display name  :\033[1m $VM_NAME \033[0m"
-	echo -e "      RAM (MB)      :\033[1m $VM_RAM \033[0m"
-	echo -e "      HDD (GB)      :\033[1m $VM_DISK_SIZE\033[0m"
-	echo -e "      HDD Interface :\033[1m $VM_DISK_TYPE\033[0m"
-	echo -e "      Outputfile    :\033[1m $VM_OUTP_FILE\033[0m"
-	echo -e "      BIOS file     :\033[1m $VM_NVRAM\033[0m"
-	echo -e "      Ethernet Type :\033[1m $VM_ETH_TYPE\033[0m"
-	echo -e "      Mac Address   :\033[1m $VM_MAC_ADDR\033[0m"
-	echo -e "      DISK type     :\033[1m $VM_DISK_TYPE\033[0m"
-<<<<<<< .mine
-	echo -e "      Working Dir   :\033[1m $WRKDIR\033[0m"
-	
-	
-=======
-	echo -e "      Floppy Disk   :\033[1m $VM_USE_FDD\033[0m"
-	echo -e "      CD/DVD        :\033[1m $VM_USE_CDD\033[0m"
-	echo -e "      USB           :\033[1m $VM_USE_USB\033[0m"
-	echo -e "      Sound Card    :\033[1m $VM_USE_SND\033[0m"
-=======
 	echo -e "      Virtual OS                \033[1m $VM_OS_TYPE \033[0m"
 	echo -e "      Display name              \033[1m $VM_NAME \033[0m"
 	echo -e "      RAM (MB)                  \033[1m $VM_RAM \033[0m"
@@ -311,8 +283,6 @@ DoEcho "I am about to create this Virtual Machine:"
 	echo -e "      CD/DVD                    \033[1m $VM_USE_CDD\033[0m"
 	echo -e "      USB                       \033[1m $VM_USE_USB\033[0m"
 	echo -e "      Sound Card                \033[1m $VM_USE_SND\033[0m"
->>>>>>> .r39
->>>>>>> .r36
 askOke
 
 
