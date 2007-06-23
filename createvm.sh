@@ -1,5 +1,13 @@
 #!/bin/bash
 # 2007 copyright by Bram Borggreve. Distributed under GPL license. No warranty whatsoever, express or implied.
+# Todo:
+# - Start VM with parameter, vmplayer and vmware
+# - Automatically register the VM with vmware server
+# - Create Virtual Disks with vmware-vdiskmanager
+# - Remove complaints about upgrading your VM
+# - Don't zip by default, and add tar.gz support.
+# - Beautify the way of creating the config file, first write it to a variable, then to file
+#
 PROGRAM_NAME=`basename $0`
 PROGRAM_TITLE="Create VMware Virtual Machines in bash"
 PROGRAM_VER="0.2"
@@ -52,6 +60,10 @@ function DoUsage() {
 	echo " Create a Windows XP machine with 512MB and sound, USB and CD enabled"
 	echo "   $ $PROGRAM_NAME winXPPro -r 512 -s -u -c" 
 	echo
+    echo " Create an Ubuntu VM with 512MB, extract and run it in vmware"
+    echo "   $ $PROGRAM_NAME ubuntu -r 512 -q && unzip ubuntu-vm.zip && vmware ubuntu/ubuntu.vmx"
+    echo
+
 }
 function DoCreateConf(){
 	echo '#!/usr/bin/vmware						'	>> $VM_VMX_FILE
