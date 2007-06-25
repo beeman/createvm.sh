@@ -45,7 +45,7 @@ function DoUsage() {
  	echo " -q, --quiet                    Run without asking questions, takes the default values."
  	echo " -y, --yes                      Say YES to all questions. This overwrites existing files!!" 
     echo " -z, --zip                      Zip the Virtual Machine"
-    echo " -g, --go                       Start the Virtual Machine in vmware" 
+    echo " -x, -X                         Start the Virtual Machine in vmware, X for fullscreen" 
 	echo
  	echo " -h, --help                     This help screen"
  	echo " -l, --list                     Generate a list of VMware Guest OSes"
@@ -139,7 +139,6 @@ function DoSummary(){
 	    echo -e "      RAM (MB)                  \033[1m $VM_RAM \033[0m"
 	    echo -e "      HDD (GB)                  \033[1m $VM_DISK_SIZE\033[0m"
 	    echo -e "      HDD Interface             \033[1m $VM_DISK_TYPE\033[0m"
-	    echo -e "      Outputfile                \033[1m $VM_OUTP_FILE\033[0m"
 	    echo -e "      BIOS file                 \033[1m $VM_NVRAM\033[0m"
 	    echo -e "      Ethernet Type             \033[1m $VM_ETH_TYPE\033[0m"
     	echo -e "      Mac Address               \033[1m $VM_MAC_ADDR\033[0m"
@@ -208,7 +207,7 @@ function DoCleanUp(){
     if [ "$DEFAULT_STARTVM" = "yes" ];
     then 
 	    DoEcho "Starting Virtual Machine..."
-        vmware -x $VM_VMX_FILE
+        vmware $VMW_OPT $VM_VMX_FILE
     fi 
 }
 function askOke(){
@@ -298,9 +297,14 @@ while [ "$1" != "" ]; do
 	-f | --floppy )
 		VM_USE_FDD="TRUE"
         	;;
-	-g | --go )
+	-x  )
 		DEFAULT_STARTVM="yes"
+        VMW_OPT="-x"
         	;;
+	-X  )
+		DEFAULT_STARTVM="yes"
+        VMW_OPT="-X"	
+            ;;
 	-m | --mac-addr )
 		shift
 		VM_MAC_ADDR=$1
