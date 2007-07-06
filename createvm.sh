@@ -104,6 +104,7 @@ function PrintUsage() {
 Usage: $PROGRAM_NAME GuestOS OPTIONS
 
 Options:
+ -a, --audio                    Enable sound card             (default: FALSE)
  -b, --bios [PATH]              Path to bios file             (default: nvram)
  -c, --cdrom                    Enable CDROM Drive            (default: FALSE)
  -d, --disk-size [SIZE]         HDD size in GB                (default: 8)
@@ -114,7 +115,6 @@ Options:
  -n, --name [NAME]              Display name of your VM       (default: <os-type>-vm)
  -o, --output-file [FILE]       Zip file to write output to   (default: <os-type>-vm.zip)
  -r, --ram [SIZE]               RAM size in MB                (default: 256)
- -s, --sound                    Enable sound card             (default: FALSE)
  -t, --disk-type [TYPE]         HDD Interface, SCSI or IDE    (default: IDE)
  -u, --usb                      Enable USB                    (default: FALSE)
 
@@ -133,13 +133,13 @@ This program needs the 'zip' and 'qemu-img' binaries in its path...
 Examples:
  Create an Ubuntu Linux machine with a 20GB hard disk and a different name
    $ $PROGRAM_NAME ubuntu -d 20 -n \My Ubuntu VM\ -o my-ubuntu-vm.zip 
-	echo
+
  Silently create a SUSE Linux machine with 512MB ram, a fixed MAC address and zip it
    $ $PROGRAM_NAME suse -r 512 -q -m 00:50:56:01:25:00 -z 
-	echo
- Create a Windows XP machine with 512MB and sound, USB and CD enabled
-   $ $PROGRAM_NAME winXPPro -r 512 -s -u -c 
-	echo
+
+ Create a Windows XP machine with 512MB and audio, USB and CD enabled
+   $ $PROGRAM_NAME winXPPro -r 512 -a -u -c 
+
  Create an Ubuntu VM with 512MB and run it in vmware
    $ $PROGRAM_NAME ubuntu -r 512 -q -x"
 }
@@ -149,85 +149,85 @@ function PrintSummary(){
 		echo -e "    Virtual OS                \033[1m $VM_OS_TYPE \033[0;00m"
 		echo -e "    Display name              \033[1m $VM_NAME \033[0;00m"
 		echo -e "    RAM (MB)                  \033[1m $VM_RAM \033[0;00m"
-		echo -e "    HDD (GB)                  \033[1m $VM_DISK_SIZE\033[0;00m"
-		echo -e "    HDD Interface             \033[1m $VM_DISK_TYPE\033[0;00m"
-		echo -e "    BIOS file                 \033[1m $VM_NVRAM\033[0;00m"
-		echo -e "    Ethernet Type             \033[1m $VM_ETH_TYPE\033[0;00m"
-		echo -e "    Mac Address               \033[1m $VM_MAC_ADDR\033[0;00m"
-		echo -e "    DISK type                 \033[1m $VM_DISK_TYPE\033[0;00m"
-		echo -e "    Floppy Disk               \033[1m $VM_USE_FDD\033[0;00m"
-		echo -e "    CD/DVD Drive              \033[1m $VM_USE_CDD\033[0;00m"
-		echo -e "    CD/DVD Iso                \033[1m $VM_USE_ISO\033[0;00m"
-		echo -e "    USB                       \033[1m $VM_USE_USB\033[0;00m"
-		echo -e "    Sound Card                \033[1m $VM_USE_SND\033[0;00m"
+		echo -e "    HDD (GB)                  \033[1m $VM_DISK_SIZE \033[0;00m"
+		echo -e "    HDD Interface             \033[1m $VM_DISK_TYPE \033[0;00m"
+		echo -e "    BIOS file                 \033[1m $VM_NVRAM \033[0;00m"
+		echo -e "    Ethernet Type             \033[1m $VM_ETH_TYPE \033[0;00m"
+		echo -e "    Mac Address               \033[1m $VM_MAC_ADDR \033[0;00m"
+		echo -e "    DISK type                 \033[1m $VM_DISK_TYPE \033[0;00m"
+		echo -e "    Floppy Disk               \033[1m $VM_USE_FDD \033[0;00m"
+		echo -e "    CD/DVD Drive              \033[1m $VM_USE_CDD \033[0;00m"
+		echo -e "    CD/DVD Iso                \033[1m $VM_USE_ISO \033[0;00m"
+		echo -e "    USB                       \033[1m $VM_USE_USB \033[0;00m"
+		echo -e "    Sound Card                \033[1m $VM_USE_SND \033[0;00m"
 	AskOke
 }
 # Create the .vmx file
 function CreateConf(){
 	DoStatus "Creating config file...   "
-		echo '#!/usr/bin/vmware'	>> $VM_VMX_FILE
-		echo 'config.version                = "'$VM_CONF_VER'"	'	>> $VM_VMX_FILE	
-		echo 'virtualHW.version             = "'$VM_VMHW_VER'"	'	>> $VM_VMX_FILE
-		echo 'displayName                   = "'$VM_NAME'"		'	>> $VM_VMX_FILE
-		echo 'guestOS                       = "'$VM_OS_TYPE'"	'	>> $VM_VMX_FILE
-		echo 'memsize                       = "'$VM_RAM'"		'	>> $VM_VMX_FILE
-		echo 'nvram                         = "'$VM_NVRAM'"		'	>> $VM_VMX_FILE
-		echo 'ethernet0.present             = "TRUE"		'	>> $VM_VMX_FILE
-		echo 'ethernet0.connectionType      = "'$VM_ETH_TYPE'"	'	>> $VM_VMX_FILE
+		echo '#!/usr/bin/vmware' >> $VM_VMX_FILE
+		echo 'config.version                = "'$VM_CONF_VER'" ' >> $VM_VMX_FILE
+		echo 'virtualHW.version             = "'$VM_VMHW_VER'" ' >> $VM_VMX_FILE
+		echo 'displayName                   = "'$VM_NAME'" ' >> $VM_VMX_FILE
+		echo 'guestOS                       = "'$VM_OS_TYPE'" ' >> $VM_VMX_FILE
+		echo 'memsize                       = "'$VM_RAM'" ' >> $VM_VMX_FILE
+		echo 'nvram                         = "'$VM_NVRAM'" ' >> $VM_VMX_FILE
+		echo 'ethernet0.present             = "TRUE" ' >> $VM_VMX_FILE
+		echo 'ethernet0.connectionType      = "'$VM_ETH_TYPE'" ' >> $VM_VMX_FILE
 		if [ ! $VM_MAC_ADDR = "default" ]; then
-			echo 'ethernet0.addressType         = "static"		'	>> $VM_VMX_FILE
-			echo 'ethernet0.address             = "'$VM_MAC_ADDR'"	'	>> $VM_VMX_FILE
+			echo 'ethernet0.addressType         = "static" ' >> $VM_VMX_FILE
+			echo 'ethernet0.address             = "'$VM_MAC_ADDR'" ' >> $VM_VMX_FILE
 		else
-			echo 'ethernet0.addressType         = "generated"		'	>> $VM_VMX_FILE
+			echo 'ethernet0.addressType         = "generated" ' >> $VM_VMX_FILE
 		fi
 		if [ ! $VM_DISK_TYPE = "IDE" ]; then
-			echo 'scsi0:0.present               = "TRUE"		'	>> $VM_VMX_FILE
-			echo 'scsi0:0.fileName              = "'$VM_DISK_NAME'"	'	>> $VM_VMX_FILE
+			echo 'scsi0:0.present               = "TRUE" ' >> $VM_VMX_FILE
+			echo 'scsi0:0.fileName              = "'$VM_DISK_NAME'" ' >> $VM_VMX_FILE
 		else 
-			echo 'ide0:0.present                = "TRUE"		'	>> $VM_VMX_FILE
-			echo 'ide0:0.fileName               = "'$VM_DISK_NAME'"	'	>> $VM_VMX_FILE
+			echo 'ide0:0.present                = "TRUE" ' >> $VM_VMX_FILE
+			echo 'ide0:0.fileName               = "'$VM_DISK_NAME'" ' >> $VM_VMX_FILE
 		fi
 		if [ $VM_USE_USB = "FALSE" ]; then
-			echo 'usb.present                   = "FALSE"		'	>> $VM_VMX_FILE
+			echo 'usb.present                   = "FALSE" ' >> $VM_VMX_FILE
 		else
-			echo 'usb.present                   = "TRUE"		'	>> $VM_VMX_FILE
-			echo 'usb.generic.autoconnect       = "FALSE"		'	>> $VM_VMX_FILE
+			echo 'usb.present                   = "TRUE" ' >> $VM_VMX_FILE
+			echo 'usb.generic.autoconnect       = "FALSE" ' >> $VM_VMX_FILE
 		fi
 		if [ $VM_USE_SND = "FALSE" ]; then
-			echo 'sound.present                 = "FALSE"		'	>> $VM_VMX_FILE
+			echo 'sound.present                 = "FALSE" ' >> $VM_VMX_FILE
 		else
-			echo 'sound.present                 = "TRUE"		'	>> $VM_VMX_FILE
-			echo 'sound.fileName                = "-1"			'	>> $VM_VMX_FILE
-			echo 'sound.autodetect              = "TRUE"		'	>> $VM_VMX_FILE
-			echo 'sound.startConnected          = "FALSE"		'	>> $VM_VMX_FILE
+			echo 'sound.present                 = "TRUE" ' >> $VM_VMX_FILE
+			echo 'sound.fileName                = "-1" ' >> $VM_VMX_FILE
+			echo 'sound.autodetect              = "TRUE" ' >> $VM_VMX_FILE
+			echo 'sound.startConnected          = "FALSE" ' >> $VM_VMX_FILE
 		fi
 		if [ $VM_USE_FDD = "FALSE" ]; then
-			echo 'floppy0.present               = "FALSE"		'	>> $VM_VMX_FILE
+			echo 'floppy0.present               = "FALSE" ' >> $VM_VMX_FILE
 		else
-			echo 'floppy0.present               = "TRUE"		'	>> $VM_VMX_FILE
-			echo 'floppy0.startConnected        = "FALSE"		'	>> $VM_VMX_FILE
+			echo 'floppy0.present               = "TRUE" ' >> $VM_VMX_FILE
+			echo 'floppy0.startConnected        = "FALSE" ' >> $VM_VMX_FILE
 		fi
 		if [ $VM_USE_CDD = "FALSE" ]; then
-			echo 'ide0:1.present                = "FALSE"		'	>> $VM_VMX_FILE
-			echo 'ide0:1.autodetect             = "TRUE"		'	>> $VM_VMX_FILE
+			echo 'ide0:1.present                = "FALSE" ' >> $VM_VMX_FILE
+			echo 'ide0:1.autodetect             = "TRUE" ' >> $VM_VMX_FILE
 		else
-			echo 'ide0:1.present                = "TRUE"		'	>> $VM_VMX_FILE
-			echo 'ide0:1.fileName               = "auto detect"		'	>> $VM_VMX_FILE
-			echo 'ide0:1.autodetect             = "TRUE"		'	>> $VM_VMX_FILE
-			echo 'ide0:1.deviceType             = "cdrom-raw"		'	>> $VM_VMX_FILE
-			echo 'ide0:1.startConnected         = "FALSE"		'	>> $VM_VMX_FILE
+			echo 'ide0:1.present                = "TRUE" ' >> $VM_VMX_FILE
+			echo 'ide0:1.fileName               = "auto detect" ' >> $VM_VMX_FILE
+			echo 'ide0:1.autodetect             = "TRUE" ' >> $VM_VMX_FILE
+			echo 'ide0:1.deviceType             = "cdrom-raw" ' >> $VM_VMX_FILE
+			echo 'ide0:1.startConnected         = "FALSE" ' >> $VM_VMX_FILE
 		fi
 		if [ $VM_USE_ISO = "FALSE" ]; then
-			echo 'ide1:0.present                = "FALSE"		'	>> $VM_VMX_FILE
-			echo 'ide1:0.autodetect             = "TRUE"		'	>> $VM_VMX_FILE
+			echo 'ide1:0.present                = "FALSE" ' >> $VM_VMX_FILE
+			echo 'ide1:0.autodetect             = "TRUE" ' >> $VM_VMX_FILE
 		else
-			echo 'ide1:0.present                = "TRUE"		'	>> $VM_VMX_FILE
-			echo 'ide1:0.fileName               = "'$VM_USE_ISO'"	'	>> $VM_VMX_FILE
-			echo 'ide1:0.deviceType             = "cdrom-image"		'	>> $VM_VMX_FILE
-			echo 'ide1:0.startConnected         = "TRUE"		'	>> $VM_VMX_FILE
-			echo 'ide1:0.mode                   = "persistent"		'	>> $VM_VMX_FILE
+			echo 'ide1:0.present                = "TRUE" ' >> $VM_VMX_FILE
+			echo 'ide1:0.fileName               = "'$VM_USE_ISO'" ' >> $VM_VMX_FILE
+			echo 'ide1:0.deviceType             = "cdrom-image" ' >> $VM_VMX_FILE
+			echo 'ide1:0.startConnected         = "TRUE" ' >> $VM_VMX_FILE
+			echo 'ide1:0.mode                   = "persistent" ' >> $VM_VMX_FILE
 		fi
-		echo 'annotation                    = "This VM is created by '$PROGRAM'..."'	>> $VM_VMX_FILE
+		echo 'annotation                    = "This VM is created by '$PROGRAM'..."' >> $VM_VMX_FILE
 	DoStatusCheck
 }
 # Create the working dir
@@ -356,6 +356,9 @@ DoOsTest
 shift
 while [ "$1" != "" ]; do
 	case $1 in
+	-a | --audio )
+		VM_USE_SND="TRUE"
+	;;
 	-b | --bios )#
 		shift
 		VM_NVRAM=$1
@@ -393,9 +396,6 @@ while [ "$1" != "" ]; do
 	-r | --ram )
 		shift
 		VM_RAM=$1
-	;;
-	-s | --sound )
-		VM_USE_SND="TRUE"
 	;;
 	-t | --disk-type )
 		shift
@@ -460,4 +460,4 @@ DoCleanUp
 # Run the VM
 DoStartVM
 
-##########	The End!	##########
+### The End! ###
