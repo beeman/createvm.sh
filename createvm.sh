@@ -8,16 +8,17 @@
 # - Automatically register the VM with vmware server
 # - Create Virtual Disks with vmware-vdiskmanager by default
 # - Remove complaints about upgrading your VM
-# - Don't zip by default (-z), and add tar.gz support.
+# - Add tar.gz support.
 # - Beautify the way of creating the config file, first write it to a variable, then to file
+# - Named color codes
 
 ### Some default variables ###
 
 # Program info
 PROGRAM_NAME=`basename $0`
 PROGRAM_TITLE="Create VMware Virtual Machines in bash"
-PROGRAM_VER="0.3"
-PROGRAM_COPYRIGHT="2007 copyright by Bram Borggreve. Distributed under GPL license. No warranty whatsoever, express or implied."
+PROGRAM_VER="0.4"
+PROGRAM_COPYRIGHT="2007-2008 copyright by Bram Borggreve. Distributed under GPL license. No warranty whatsoever, express or implied."
 PROGRAM="$PROGRAM_NAME $PROGRAM_VER"
 
 # Default settings
@@ -53,11 +54,11 @@ function PrintVersion() {
 	echo -e $PROGRAM_COPYRIGHT
 }
 # Print status message
-function DoStatus() {
+function StatusMsg() {
 	echo -ne "\033[1m    \033[0;00m$1 "
 }
 # Print if cmd returned oke or failed
-function DoStatusCheck() {
+function StatusCheck() {
 	if [[ $? -ne 0 ]] ; then
 		echo -e "\033[1;31m[FAILED]\033[0;00m"
 		exit 1;
@@ -66,15 +67,15 @@ function DoStatusCheck() {
 	fi
 }
 # Print informational message
-function DoInfo() {
+function Info() {
 	echo -e "\033[1m    $1\033[0;00m "
 }
 # Print alert message
-function DoAlert() {
+function Alert() {
 	echo -e "\033[1m[!] \033[0;00m\033[1;31m$1\033[0;00m "
 }
 # Print error message
-function DoError() {
+function Error() {
 	echo -e "\033[1m[e] \033[0;00m\033[1;31m$1\033[0;00m "
 }
 # Ask if a user wants to continue, default to YES
@@ -83,7 +84,7 @@ function AskOke(){
 	then
 		echo -ne "\033[1m[?] Is it oke to continue?     \033[1;32m[Yn]\033[0;00m "
 		read YESNO
-		if [ "$YESNO" = "n" ] ; then DoAlert "Stopped..."; exit 0; fi
+		if [ "$YESNO" = "n" ] ; then Alert "Stopped..."; exit 0; fi
 	fi
 }
 # Ask if a user wants to continue, default to NO
@@ -92,7 +93,7 @@ function AskNoOke(){
 	then
 		echo -ne "\033[1m[?] Is it oke to continue?     \033[1;31m[yN]\033[0;00m "
 		read YESNO
-		if [ ! "$YESNO" = "y" ]; then DoAlert "Stopped..."; exit 0; fi
+		if [ ! "$YESNO" = "y" ]; then Alert "Stopped..."; exit 0; fi
 	fi
 }
 
@@ -145,7 +146,7 @@ Examples:
 }
 # Print a summary with some of the options on the screen
 function PrintSummary(){
-	DoInfo "I am about to create this Virtual Machine:"
+	Info "I am about to create this Virtual Machine:"
 		echo -e "    Virtual OS                \033[1m $VM_OS_TYPE \033[0;00m"
 		echo -e "    Display name              \033[1m $VM_NAME \033[0;00m"
 		echo -e "    RAM (MB)                  \033[1m $VM_RAM \033[0;00m"
@@ -164,7 +165,7 @@ function PrintSummary(){
 }
 # Create the .vmx file
 function CreateConf(){
-	DoStatus "Creating config file...   "
+	StatusMsg "Creating config file...   "
 		echo '#!/usr/bin/vmware' >> $VM_VMX_FILE
 		echo 'config.version                = "'$VM_CONF_VER'" ' >> $VM_VMX_FILE
 		echo 'virtualHW.version             = "'$VM_VMHW_VER'" ' >> $VM_VMX_FILE
@@ -228,29 +229,29 @@ function CreateConf(){
 			echo 'ide1:0.mode                   = "persistent" ' >> $VM_VMX_FILE
 		fi
 		echo 'annotation                    = "This VM is created by '$PROGRAM'..."' >> $VM_VMX_FILE
-	DoStatusCheck
+	StatusCheck
 }
 # Create the working dir
 function CreateWorkingDir(){
-	DoStatus "Creating working dir...   "
+	StatusMsg "Creating working dir...   "
 		mkdir -p $WRKDIR &> /dev/null
-	DoStatusCheck
+	StatusCheck
 }
 # Create the virtual disk
 function CreateVirtualDisk(){
-	DoStatus "Creating virtual disk...  "
+	StatusMsg "Creating virtual disk...  "
 		qemu-img create -f vmdk $WRKDIR/$VM_DISK_NAME $VM_DISK_SIZE &> /dev/null
-	DoStatusCheck
+	StatusCheck
 }
 # Generate a zip file with the created VM (TODO: needs tar.gz too)
 function CreateArchive(){
 	if [ "$DEFAULT_ZIPIT" = "yes" ]; 
 	then
 		# Generate zipfile
-		DoStatus "Generate zipfile...       "
+		StatusMsg "Generate zipfile...       "
 		cd $DEFAULT_WRKPATH
 		zip -q -r $VM_OUTP_FILE $WRKDIR/ &> /dev/null
-		DoStatusCheck
+		StatusCheck
 	fi
 }
 # Print OS list.
@@ -262,7 +263,7 @@ function PrintOsList() {
 	done
 }
 # Check if selected OS is in the OS list
-function DoOsTest(){
+function RunOsTest(){
 	OS_SUPPORTED="no";
 	for OS in ${SUPPORT_OS[@]}
 	do 
@@ -273,64 +274,64 @@ function DoOsTest(){
 	done
 	if [ ! $OS_SUPPORTED = "yes" ]; 
 	then
-		DoError "Guest OS \"$VM_OS_TYPE\" is unknown..."
-		DoInfo "use \"$PROGRAM_NAME -h\" for help and examples..."
-		DoInfo "and \"$PROGRAM_NAME -l\" for a list of Guest OS's..."
+		Error "Guest OS \"$VM_OS_TYPE\" is unknown..."
+		Info "use \"$PROGRAM_NAME -h\" for help and examples..."
+		Info "and \"$PROGRAM_NAME -l\" for a list of Guest OS's..."
 		exit 1
 	fi
 }
 # Check for binaries and existance of previously created VM's
-function DoChecks(){
+function RunTests(){
 	# Check for needed binaries
-	DoInfo "Creating Virtual Machine..."
-	DoStatus "Checking for qemu-img...  "
+	Info "Creating Virtual Machine..."
+	StatusMsg "Checking for qemu-img...  "
 		which qemu-img &> /dev/null
-	DoStatusCheck
-	DoStatus "Checking for zip...       "
+	StatusCheck
+	StatusMsg "Checking for zip...       "
 		which zip &> /dev/null
-	DoStatusCheck
+	StatusCheck
 	# Check if working dir file exists
 	if [ -e $WRKDIR ]
 	then 
-		DoAlert "Working dir already exists, i will trash it!"
+		Alert "Working dir already exists, i will trash it!"
 		AskNoOke
-		DoStatus "Trashing working dir...   "
+		StatusMsg "Trashing working dir...   "
 			rm -rf $WRKDIR &>/dev/null
-		DoStatusCheck
+		StatusCheck
 	fi
 	# Check if zipfile exists
 	if [ "$DEFAULT_ZIPIT" = "yes" ]; 
 	then
 		if [ -e $VM_OUTP_FILE ]
 		then 
-			DoAlert "Zipfile already exists, i will trash it!"
+			Alert "Zipfile already exists, i will trash it!"
 			AskNoOke
-			DoStatus "Trashing zipfile...       "
+			StatusMsg "Trashing zipfile...       "
 				rm $VM_OUTP_FILE &>/dev/null
-			DoStatusCheck
+			StatusCheck
 		fi
 	fi
 }
 # Clean up working dir and start VM (TODO: needs top be seperated)
-function DoCleanUp(){
+function CleanUp(){
 	# Back to base dir...
 	cd - &> /dev/null
 	# Clean up if zipped, and announce file location
 	if [ "$DEFAULT_ZIPIT" = "yes" ]; 
 	then 
-		DoStatus "Cleaning up workingdir... "
+		StatusMsg "Cleaning up workingdir... "
 			rm -rf $WRKDIR
-		DoStatusCheck
-		DoInfo "Grab you VM here: $VM_OUTP_FILE"
+		StatusCheck
+		Info "Grab you VM here: $VM_OUTP_FILE"
 	else
-		DoInfo "Created VM here: $VM_VMX_FILE"
+		Info "Created VM here: $VM_VMX_FILE"
 	fi
 }
 # Start VM if asked for 
-function DoStartVM(){
+function StartVM(){
 	if [ "$DEFAULT_STARTVM" = "yes" ];
 	then 
-		DoInfo "Starting Virtual Machine..."
+		Info "Starting Virtual Machine..."
 		vmware $VMW_OPT $VM_VMX_FILE
 	fi
 }
@@ -349,8 +350,8 @@ VM_OS_TYPE=$1
 VM_NAME=$VM_OS_TYPE-vm
 VM_OUTP_FILE=`pwd`/$VM_OS_TYPE-vm.zip
 
-# Do OS test
-DoOsTest
+# Run OS test
+RunOsTest
 
 # Shift through all parameters to search for options
 shift
@@ -426,8 +427,8 @@ while [ "$1" != "" ]; do
 		DEFAULT_ZIPIT="yes"
 	;;
 	* )
-		DoError "Euhm... what did you mean by \"$*\"?"
-		DoInfo "Please run \"$PROGRAM_NAME -h\" for help and examples..."
+		Error "Euhm... what did you mean by \"$*\"?"
+		Info "Please run \"$PROGRAM_NAME -h\" for help and examples..."
 		exit 1
 	esac
 	shift
@@ -444,7 +445,7 @@ PrintVersion
 # Display summary
 PrintSummary
 # Do some tests
-DoChecks
+RunTests
 
 # Create working environment
 CreateWorkingDir
@@ -456,9 +457,9 @@ CreateConf
 CreateArchive
 
 # Clean up environment
-DoCleanUp
+CleanUp
 # Run the VM
-DoStartVM
+StartVM
 
 ### The End! ###
 
