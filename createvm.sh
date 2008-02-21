@@ -21,12 +21,13 @@
 PROGRAM_NAME=`basename $0`
 PROGRAM_TITLE="Create VMware Virtual Machines in bash"
 PROGRAM_VER="0.4"
-PROGRAM_COPYRIGHT="2007-2008 copyright by Bram Borggreve. Distributed under GPL license. No warranty whatsoever, express or implied."
+PROGRAM_COPYRIGHT="2007-2008 copyright by Bram Borggreve. \
+Distributed under GPL license No warranty whatsoever, express or implied."
 PROGRAM="$PROGRAM_NAME $PROGRAM_VER"
 
 # Default settings
 DEFAULT_QUIET=no		# Don't ask for confirmations, only when critical
-DEFAULT_YES=no			# Yes to al questions (warning: will overwrite existing files with the same name) 
+DEFAULT_YES=no			# Yes to al questions (warning: will overwrite existing files) 
 DEFAULT_ZIPIT=no		# Zip it after creation
 DEFAULT_STARTVM=no		# Start it after creation
 DEFAULT_WRKPATH=.		# Location where output will be
@@ -492,4 +493,3 @@ CleanUp
 StartVM
 
 ### The End! ###
-
