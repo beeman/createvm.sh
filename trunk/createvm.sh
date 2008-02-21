@@ -7,10 +7,13 @@
 # - Start VM with parameter, vmplayer and vmware
 # - Automatically register the VM with vmware server
 # - Create Virtual Disks with vmware-vdiskmanager by default
+# - Add ESX support
 # - Remove complaints about upgrading your VM
 # - Add tar.gz support.
 # - Beautify the way of creating the config file, first write it to a variable, then to file
 # - Named color codes
+# - Create more examples, give it a seperate option
+
 
 ### Some default variables ###
 
@@ -22,28 +25,28 @@ PROGRAM_COPYRIGHT="2007-2008 copyright by Bram Borggreve. Distributed under GPL 
 PROGRAM="$PROGRAM_NAME $PROGRAM_VER"
 
 # Default settings
-DEFAULT_YES=no
-DEFAULT_QUIET=no
-DEFAULT_ZIPIT=no
-DEFAULT_STARTVM=no
-DEFAULT_WRKPATH=.
+DEFAULT_QUIET=no		# Don't ask for confirmations, only when critical
+DEFAULT_YES=no			# Yes to al questions (warning: will overwrite existing files with the same name) 
+DEFAULT_ZIPIT=no		# Zip it after creation
+DEFAULT_STARTVM=no		# Start it after creation
+DEFAULT_WRKPATH=.		# Location where output will be
 
 # Default VM parameters
-VM_CONF_VER=8
-VM_VMHW_VER=3
-VM_RAM=256
-VM_NVRAM=nvram
-VM_ETH_TYPE=Bridged
-VM_MAC_ADDR=default
-VM_DISK_SIZE=8
-VM_DISK_TYPE=IDE
-VM_USE_USB=FALSE
-VM_USE_SND=FALSE
-VM_USE_CDD=FALSE
-VM_USE_ISO=FALSE
-VM_USE_FDD=FALSE
+VM_CONF_VER=8			# VM Config version
+VM_VMHW_VER=3			# VM Hardware version
+VM_RAM=256				# Default RAM
+VM_NVRAM=nvram			# Default bios file
+VM_ETH_TYPE=Bridged		# Default network type
+VM_MAC_ADDR=default		# Default MAC address
+VM_DISK_SIZE=8			# Default DISK size (GB's)
+VM_DISK_TYPE=IDE		# Default DISK type
+VM_USE_USB=FALSE		# Enable USB
+VM_USE_SND=FALSE		# Enable sound
+VM_USE_CDD=FALSE		# Enable CD drive
+VM_USE_ISO=FALSE		# Enable and load ISO 
+VM_USE_FDD=FALSE		# Enable and load FDD
 
-# List of supported OS's
+# This is the list of supported OS's
 SUPPORT_OS=(winVista longhorn winNetBusiness winNetEnterprise winNetStandard\
 winNetWeb winXPPro winXPHome win2000AdvServ win2000Serv win2000Pro winNT winMe\
 win98 win95 win31 windows winVista-64 longhorn-64 winNetEnterprise-64\
@@ -52,6 +55,7 @@ mandrake nld9 sjds turbolinux other26xlinux\ other24xlinux linux ubuntu-64\
 rhel4-64 rhel3-64 sles-64 suse-64 other26xlinux-64 other24xlinux-64 other-64\
 otherlinux-64 solaris10-64 solaris10 solaris9 solaris8 solaris7 solaris6\
 solaris netware6 netware5 netware4 netware freeBSD-64 freeBSD darwin other)
+
 
 ### Main functions ###
 
@@ -73,7 +77,11 @@ function StatusCheck() {
 		echo -e "\033[1;32m[OK]\033[0;00m"
 	fi
 }
-# Print informational message
+# Print normal message
+function Message() {
+	echo -e "    $1 "
+}
+# Print highlighted message
 function Info() {
 	echo -e "\033[1m    $1\033[0;00m "
 }
@@ -111,34 +119,42 @@ function PrintUsage() {
 	echo -e "\033[1m$PROGRAM - $PROGRAM_TITLE\033[0;00m.
 Usage: $PROGRAM_NAME GuestOS OPTIONS
 
-Options:
- -a, --audio                    Enable sound card             (default: FALSE)
- -b, --bios [PATH]              Path to bios file             (default: nvram)
- -c, --cdrom                    Enable CDROM Drive            (default: FALSE)
- -d, --disk-size [SIZE]         HDD size in GB                (default: 8)
- -e, --eth-type [TYPE]          Ethernet Type                 (default: bridged)
- -f, --floppy                   Enable Floppy Drive           (default: FALSE)
- -i, --iso [FILE]               Enable CDROM Iso              (default: FALSE)
- -m, --mac-addr [ADDR]          Use static mac address        (address: 00:50:56:xx:xx:xx)
- -n, --name [NAME]              Display name of your VM       (default: <os-type>-vm)
- -o, --output-file [FILE]       Zip file to write output to   (default: <os-type>-vm.zip)
+VM Options:
+ -n, --name [NAME]              Friendly name of the VM       (default: <os-type>-vm)
  -r, --ram [SIZE]               RAM size in MB                (default: 256)
- -t, --disk-type [TYPE]         HDD Interface, SCSI or IDE    (default: IDE)
- -u, --usb                      Enable USB                    (default: FALSE)
+ -d, --disk-size [SIZE]         HDD size in GB                (default: 8)
+ -t, --disk-type [TYPE]         HDD Interface, SCSI or IDE    (default: SCSI)
+ -e, --eth-type [TYPE]          Network Type (bridge/nat/etc) (default: bridged)
+ -m, --mac-addr [ADDR]          Use static mac address        (address: 00:50:56:xx:xx:xx)
 
- -q, --quiet                    Run without asking questions, takes the default values.
- -y, --yes                      Say YES to all questions. This overwrites existing files!! 
+ -c, --cdrom                    Enable CDROM Drive            (default: FALSE)
+ -i, --iso [FILE]               Enable CDROM Iso              (default: FALSE)
+ -f, --floppy                   Enable Floppy Drive           (default: FALSE)
+ -a, --audio                    Enable sound card             (default: FALSE)
+ -u, --usb                      Enable USB                    (default: FALSE)
+ -b, --bios [PATH]              Path to custom bios file      (default: nvram)
+
+ -o, --output-file [FILE]       Zip file to write output to   (default: <os-type>-vm.zip)
  -z, --zip                      Zip the Virtual Machine
- -x, -X                         Start the Virtual Machine in vmware, X for fullscreen 
+
+Program Options:
+ -l, --list                     Generate a list of VMware Guest OSes
+ -q, --quiet                    Runs without asking questions, take the default values
+ -y, --yes                      Say YES to all questions. This overwrites existing files!! 
+ -x, -X                         Start the Virtual Machine in vmware, X for fullscreen
 
  -h, --help                     This help screen
- -l, --list                     Generate a list of VMware Guest OSes
  -v, --version                  Shows version information
+ -ex, --sample                  Show some examples 
 
 Dependencies:
-This program needs the 'zip' and 'qemu-img' binaries in its path...
+This program needs the 'zip' and 'qemu-img' binaries in its path..."
+}
+# Show some examples
+function PrintExamples(){
+	echo -e "\033[1m$PROGRAM - $PROGRAM_TITLE\033[0;00m.
+Here are some examples:
 
-Examples:
  Create an Ubuntu Linux machine with a 20GB hard disk and a different name
    $ $PROGRAM_NAME ubuntu -d 20 -n \My Ubuntu VM\ -o my-ubuntu-vm.zip 
 
@@ -149,8 +165,9 @@ Examples:
    $ $PROGRAM_NAME winXPPro -r 512 -a -u -c 
 
  Create an Ubuntu VM with 512MB and run it in vmware
-   $ $PROGRAM_NAME ubuntu -r 512 -q -x"
+   $ $PROGRAM_NAME ubuntu -r 512 -q -x"	
 }
+	
 # Print a summary with some of the options on the screen
 function PrintSummary(){
 	Info "I am about to create this Virtual Machine:"
@@ -282,8 +299,11 @@ function RunOsTest(){
 	if [ ! $OS_SUPPORTED = "yes" ]; 
 	then
 		Error "Guest OS \"$VM_OS_TYPE\" is unknown..."
-		Info "use \"$PROGRAM_NAME -h\" for help and examples..."
-		Info "and \"$PROGRAM_NAME -l\" for a list of Guest OS's..."
+		
+		Message "Run \"$PROGRAM_NAME -l\" for a list of Guest OS's..."
+
+		Message "Run \"$PROGRAM_NAME -h\" for help..."
+		Message "Run \"$PROGRAM_NAME -ex\" for examples..."
 		exit 1
 	fi
 }
@@ -347,8 +367,9 @@ function StartVM(){
 
 # Chatch some parameters if the first one is not the OS.
 if [ "$1" = "" ] || [ "$1" = "-h" ] || [ "$1" = "--help" ]; then PrintUsage; exit; fi
-if [ "$1" = "-v" ] || [ "$1" = "--version" ]; then PrintVersion; exit; fi
-if [ "$1" = "--list" ] || [ "$1" = "-l" ]; then PrintOsList; exit 1; fi
+if [ "$1" = "-v" ] || [ "$1" = "--version" ]; 	then PrintVersion; exit; fi
+if [ "$1" = "-l" ] || [ "$1" = "--list" ]; 	then PrintOsList; exit 1; fi
+if [ "$1" = "-ex" ] || [ "$1" = "--sample" ]; 	then PrintExamples; exit 1; fi
 
 # The first parameter is the Guest OS Type
 VM_OS_TYPE=$1
@@ -435,7 +456,9 @@ while [ "$1" != "" ]; do
 	;;
 	* )
 		Error "Euhm... what did you mean by \"$*\"?"
-		Info "Please run \"$PROGRAM_NAME -h\" for help and examples..."
+		Message "Run \"$PROGRAM_NAME -h\" for help"
+		Message "Run \"$PROGRAM_NAME -ex\" for examples..."
+		
 		exit 1
 	esac
 	shift
