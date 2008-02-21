@@ -1,0 +1,18 @@
+#labels Featured
+= Welcome =
+
+[https://createvm.googlecode.com/svn/trunk/createvm.sh createvm.sh] is a script written in bash. With createvm you can create a VMware virtual machine with one command. It was made to  automate the process of creating Virtual Machines.
+
+It supports a couple of command line parameters which allow you to configure the VM you are creating. 
+
+= Links =
+  * [http://createvm.googlecode.com/svn/trunk/createvm.sh createvm.sh trunk]
+  * [http://createvm.googlecode.com/svn/tags/0.3/createvm.sh createvm.sh 0.3]
+  * [http://createvm.googlecode.com/svn/tags/0.3/createvm.sh createvm.sh 0.2]
+
+= Documents =
+Here are some documents i'm working on not directly related to createvm.
+
+  * [http://docs.google.com/Doc?id=dgzzd5gk_21dsxc68hj Linux Unattended]
+  * [http://spreadsheets.google.com/pub?key=p4qgbE1Qe3fvd-vcYyIK2Ag Linux commands for VMware ESX]
+
