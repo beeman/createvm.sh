@@ -67,6 +67,8 @@
 <icon BUILTIN="button_ok"/>
 </node>
 </node>
+<node CREATED="1203895885709" ID="Freemind_Link_915030039" MODIFIED="1203895888858" TEXT="syncit.sh"/>
+<node CREATED="1203895893883" ID="Freemind_Link_540205072" MODIFIED="1203895899672" TEXT="addhost.sh"/>
 </node>
 </node>
 </map>
