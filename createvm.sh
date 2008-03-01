@@ -34,13 +34,13 @@ DEFAULT_WRKPATH=.		# Location where output will be
 
 # Default VM parameters
 VM_CONF_VER=8			# VM Config version
-VM_VMHW_VER=3			# VM Hardware version
+VM_VMHW_VER=4			# VM Hardware version
 VM_RAM=256				# Default RAM
 VM_NVRAM=nvram			# Default bios file
 VM_ETH_TYPE=Bridged		# Default network type
 VM_MAC_ADDR=default		# Default MAC address
 VM_DISK_SIZE=8			# Default DISK size (GB's)
-VM_DISK_TYPE=IDE		# Default DISK type
+VM_DISK_TYPE=SCSI		# Default DISK type
 VM_USE_USB=FALSE		# Enable USB
 VM_USE_SND=FALSE		# Enable sound
 VM_USE_CDD=FALSE		# Enable CD drive
@@ -149,7 +149,7 @@ Program Options:
  -ex, --sample                  Show some examples 
 
 Dependencies:
-This program needs the 'zip' and 'qemu-img' binaries in its path..."
+This program needs the 'zip' and 'vmware-vdiskmanager' binaries in its path..."
 }
 # Show some examples
 function PrintExamples(){
@@ -265,7 +265,7 @@ function CreateWorkingDir(){
 # Create the virtual disk
 function CreateVirtualDisk(){
 	StatusMsg "Creating virtual disk...  "
-		qemu-img create -f vmdk $WRKDIR/$VM_DISK_NAME $VM_DISK_SIZE &> /dev/null
+		vmware-vdiskmanager -c -a buslogic -t 1 -s $VM_DISK_SIZE $WRKDIR/$VM_DISK_NAME  &> /dev/null
 	StatusCheck
 }
 # Generate a zip file with the created VM (TODO: needs tar.gz too)
@@ -312,10 +312,10 @@ function RunOsTest(){
 function RunTests(){
 	# Check for needed binaries
 	Info "Creating Virtual Machine..."
-	StatusMsg "Checking for qemu-img...  "
-		which qemu-img &> /dev/null
+	StatusMsg " - vmware-vdiskmanager... "
+		which vmware-vdiskmanager &> /dev/null
 	StatusCheck
-	StatusMsg "Checking for zip...       "
+	StatusMsg " - zip...                 "
 		which zip &> /dev/null
 	StatusCheck
 	# Check if working dir file exists
@@ -466,7 +466,7 @@ while [ "$1" != "" ]; do
 done
 
 # The last parameters are set
-VM_DISK_SIZE=$VM_DISK_SIZE'G'
+VM_DISK_SIZE=$VM_DISK_SIZE'Gb'
 WRKDIR=$DEFAULT_WRKPATH/$VM_OS_TYPE
 VM_DISK_NAME=$VM_DISK_TYPE-$VM_OS_TYPE.vmdk
 VM_VMX_FILE=$WRKDIR/$VM_OS_TYPE.vmx
