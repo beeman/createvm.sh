@@ -115,5 +115,6 @@
 </node>
 <node CREATED="1203902818013" ID="Freemind_Link_496460368" MODIFIED="1203902826208" TEXT="Configure Clustering"/>
 </node>
+<node CREATED="1204402726793" ID="Freemind_Link_1685157040" MODIFIED="1204402730650" POSITION="left" TEXT="Dit is een bolletje"/>
 </node>
 </map>
