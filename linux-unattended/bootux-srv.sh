@@ -1,5 +1,5 @@
 #!/bin/bash
-## wget -q http://boreel.ath.cx/b/bootux/scripts/bootux-srv.sh -O bootux-srv.sh && sh bootux-srv.sh
+## wget -q http://createvm.googlecode.com/svn/linux-unattended/bootux-srv.sh -O bootux-srv.sh && sh bootux-srv.sh
 # Check OS
 # - distro/type
 #
@@ -15,7 +15,9 @@
 
 distro=`lsb_release -is`; 
 packages=(httpd php mysql-server mysql dnsmasq tftp-server subversion)
-bootuxuser='bootux'
+bootuxuser="bootux"
+bootuxtarget="/home/$bootuxuser/public_html/";
+
 ip_address=`ifconfig eth0 | grep "inet addr" | cut -d ":" -f 2 | cut -d " " -f 1`
 
 if [ "$distro" == "CentOS" ] || [ "$distro" == "Fedora" ] ; 
@@ -25,7 +27,6 @@ else
 	echo " - $distro is not supported! Exiting.";
 	exit
 fi
-
 
 echo " - Installing ${packages[@]}"
 yum -y install ${packages[@]}
@@ -40,14 +41,14 @@ echo " - Setting rights"
 chmod -Rc 755 /home/"$bootuxuser"
 
 echo " - Creating webdir"
-mkdir -pv "/home/$bootuxuser/public_html/"
+mkdir -pv ""
+chown -Rc apache:apache "$bootuxtarget"
 
 echo " - Making symlink"
-ln -sv /home/$bootuxuser/public_html/ /var/www/html/bootux
+ln -sv "$bootuxtarget" /var/www/html/bootux
 
-echo " - Creating info.php"
-echo '<?php echo $_SERVER['"'SERVER_SIGNATURE'"']; ?>' > "/home/$bootuxuser/public_html/info.php"
-wget -q http://createvm.googlecode.com/svn/linux-unattended/check.php -O "/home/$bootuxuser/public_html/check.php"
+echo " - Getting bootux from Subversion"
+svn co http://createvm.googlecode.com/svn/linux-unattended/ "$bootuxtarget"
 
 echo " - Done..."
 echo "Bootux is probably running on http://$ip_address/bootux/"
