@@ -1,5 +1,5 @@
 #!/bin/bash
-## wget -q http://createvm.googlecode.com/svn/linux-unattended/bootux-srv.sh -O bootux-srv.sh && sh bootux-srv.sh
+## wget -q http://createvm.googlecode.com/svn/linux-unattended/scripts/bootux-srv.sh -O bootux-srv.sh && sh bootux-srv.sh
 #
 # Check OS
 # - distro
