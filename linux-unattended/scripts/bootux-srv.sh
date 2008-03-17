@@ -40,8 +40,6 @@ service httpd start
 echo " - Creating http and tftp dir"
 mkdir -pv $httpdir
 mkdir -pv $tftpdir
-chown -Rc apache:apache $httpdir
-chown -Rc apache:apache $tftpdir
 
 echo " - Making symlink"
 ln -sv $httpdir /var/www/html/bootux
@@ -61,6 +59,10 @@ ln -sv $tftpdir /tftpboot
 /etc/init.d/xinetd restart
 # Add pxelinux kernel
 cp -v `rpmquery --list syslinux | grep pxelinux.0` $tftpdir
+
+echo " - Settings rights"
+chown -Rc apache:apache $httpdir
+chown -Rc apache:apache $tftpdir
 
 echo " - Done..."
 echo "Bootux is probably running on http://$ip_address/bootux/"
