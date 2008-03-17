@@ -50,6 +50,16 @@ echo " - Getting bootux from Subversion"
 svn co http://createvm.googlecode.com/svn/linux-unattended/ $httpdir
 
 echo " - Installing PXE boot"
+# Backup tftp config
+cp -pv /etc/xinetd.d/tftp /etc/xinetd.d/.tftp.pre-bootux
+# Enable tftp
+sed -e s/disable.*yes/disable\ =\ no/g /etc/xinetd.d/.tftp.pre-bootux > /etc/xinetd.d/tftp
+# Create symlink to our tftp dir
+mv -v /tftpboot /.tftpboot.pre-bootux
+ln -sv $tftpdir /tftpboot
+# (Re)Start xinetd
+/etc/init.d/xinetd restart
+# Add pxelinux kernel
 cp -v `rpmquery --list syslinux | grep pxelinux.0` $tftpdir
 
 echo " - Done..."
