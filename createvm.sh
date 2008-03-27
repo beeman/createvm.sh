@@ -20,7 +20,7 @@
 # Program info
 PROGRAM_NAME=`basename $0`
 PROGRAM_TITLE="Create VMware Virtual Machines in bash"
-PROGRAM_VER="0.4"
+PROGRAM_VER="0.5"
 PROGRAM_COPYRIGHT="2007-2008 copyright by Bram Borggreve. \
 Distributed under GPL license No warranty whatsoever, express or implied."
 PROGRAM="$PROGRAM_NAME $PROGRAM_VER"
@@ -30,14 +30,14 @@ DEFAULT_QUIET=no		# Don't ask for confirmations, only when critical
 DEFAULT_YES=no			# Yes to al questions (warning: will overwrite existing files) 
 DEFAULT_ZIPIT=no		# Zip it after creation
 DEFAULT_STARTVM=no		# Start it after creation
-DEFAULT_WRKPATH=.		# Location where output will be
+DEFAULT_WRKPATH=.       # Location where output will be
 
 # Default VM parameters
 VM_CONF_VER=8			# VM Config version
 VM_VMHW_VER=4			# VM Hardware version
 VM_RAM=256				# Default RAM
 VM_NVRAM=nvram			# Default bios file
-VM_ETH_TYPE=Bridged		# Default network type
+VM_ETH_TYPE=bridged		# Default network type
 VM_MAC_ADDR=default		# Default MAC address
 VM_DISK_SIZE=8			# Default DISK size (GB's)
 VM_DISK_TYPE=SCSI		# Default DISK type
@@ -48,13 +48,13 @@ VM_USE_ISO=FALSE		# Enable and load ISO
 VM_USE_FDD=FALSE		# Enable and load FDD
 
 # This is the list of supported OS's
-SUPPORT_OS=(winVista longhorn winNetBusiness winNetEnterprise winNetStandard\
-winNetWeb winXPPro winXPHome win2000AdvServ win2000Serv win2000Pro winNT winMe\
-win98 win95 win31 windows winVista-64 longhorn-64 winNetEnterprise-64\
-winNetStandard-64 winXPPro-64 ubuntu redhat rhel4 rhel3 rhel2 suse sles\
-mandrake nld9 sjds turbolinux other26xlinux\ other24xlinux linux ubuntu-64\
-rhel4-64 rhel3-64 sles-64 suse-64 other26xlinux-64 other24xlinux-64 other-64\
-otherlinux-64 solaris10-64 solaris10 solaris9 solaris8 solaris7 solaris6\
+SUPPORT_OS=(winVista longhorn winNetBusiness winNetEnterprise winNetStandard \
+winNetWeb winXPPro winXPHome win2000AdvServ win2000Serv win2000Pro winNT winMe \
+win98 win95 win31 windows winVista-64 longhorn-64 winNetEnterprise-64 \
+winNetStandard-64 winXPPro-64 ubuntu redhat rhel4 rhel3 rhel2 suse sles \
+mandrake nld9 sjds turbolinux other26xlinux\ other24xlinux linux ubuntu-64 \
+rhel4-64 rhel3-64 sles-64 suse-64 other26xlinux-64 other24xlinux-64 other-64 \
+otherlinux-64 solaris10-64 solaris10 solaris9 solaris8 solaris7 solaris6 \
 solaris netware6 netware5 netware4 netware freeBSD-64 freeBSD darwin other)
 
 
@@ -191,69 +191,65 @@ function PrintSummary(){
 # Create the .vmx file
 function CreateConf(){
 	StatusMsg "Creating config file...   "
-		echo '#!/usr/bin/vmware' >> $VM_VMX_FILE
-		echo 'config.version                = "'$VM_CONF_VER'" ' >> $VM_VMX_FILE
-		echo 'virtualHW.version             = "'$VM_VMHW_VER'" ' >> $VM_VMX_FILE
-		echo 'displayName                   = "'$VM_NAME'" ' >> $VM_VMX_FILE
-		echo 'guestOS                       = "'$VM_OS_TYPE'" ' >> $VM_VMX_FILE
-		echo 'memsize                       = "'$VM_RAM'" ' >> $VM_VMX_FILE
-		echo 'nvram                         = "'$VM_NVRAM'" ' >> $VM_VMX_FILE
-		echo 'ethernet0.present             = "TRUE" ' >> $VM_VMX_FILE
-		echo 'ethernet0.connectionType      = "'$VM_ETH_TYPE'" ' >> $VM_VMX_FILE
-		if [ ! $VM_MAC_ADDR = "default" ]; then
-			echo 'ethernet0.addressType         = "static" ' >> $VM_VMX_FILE
-			echo 'ethernet0.address             = "'$VM_MAC_ADDR'" ' >> $VM_VMX_FILE
+		# echo '#!/usr/bin/vmware' >> $VM_VMX_FILE
+		echo 'config.version = "'$VM_CONF_VER'"' >> $VM_VMX_FILE
+		echo 'virtualHW.version = "'$VM_VMHW_VER'"' >> $VM_VMX_FILE
+		echo 'displayName = "'$VM_NAME'"' >> $VM_VMX_FILE
+		echo 'guestOS = "'$VM_OS_TYPE'"' >> $VM_VMX_FILE
+		echo 'memsize = "'$VM_RAM'"' >> $VM_VMX_FILE
+		if [ ! $VM_NVRAM = "nvram" ]; then
+			FILENAME=`basename $VM_NVRAM`
+			cp $VM_NVRAM $WRKDIR/$FILENAME
+			echo 'nvram = "'$FILENAME'"' >> $VM_VMX_FILE
 		else
-			echo 'ethernet0.addressType         = "generated" ' >> $VM_VMX_FILE
+			echo 'nvram = "'$VM_NVRAM'"' >> $VM_VMX_FILE
+		fi
+		echo 'ethernet0.present = "TRUE"' >> $VM_VMX_FILE
+		echo 'ethernet0.connectionType = "'$VM_ETH_TYPE'"' >> $VM_VMX_FILE
+		if [ ! $VM_MAC_ADDR = "default" ]; then
+			echo 'ethernet0.addressType = "static"' >> $VM_VMX_FILE
+			echo 'ethernet0.address = "'$VM_MAC_ADDR'"' >> $VM_VMX_FILE
+		else
+			echo 'ethernet0.addressType = "generated"' >> $VM_VMX_FILE
 		fi
 		if [ ! $VM_DISK_TYPE = "IDE" ]; then
-			echo 'scsi0:0.present               = "TRUE" ' >> $VM_VMX_FILE
-			echo 'scsi0:0.fileName              = "'$VM_DISK_NAME'" ' >> $VM_VMX_FILE
+			echo 'scsi0:0.present = "TRUE"' >> $VM_VMX_FILE
+			echo 'scsi0:0.fileName = "'$VM_DISK_NAME'"' >> $VM_VMX_FILE
 		else 
-			echo 'ide0:0.present                = "TRUE" ' >> $VM_VMX_FILE
-			echo 'ide0:0.fileName               = "'$VM_DISK_NAME'" ' >> $VM_VMX_FILE
+			echo 'ide0:0.present = "TRUE"' >> $VM_VMX_FILE
+			echo 'ide0:0.fileName = "'$VM_DISK_NAME'"' >> $VM_VMX_FILE
 		fi
-		if [ $VM_USE_USB = "FALSE" ]; then
-			echo 'usb.present                   = "FALSE" ' >> $VM_VMX_FILE
-		else
-			echo 'usb.present                   = "TRUE" ' >> $VM_VMX_FILE
-			echo 'usb.generic.autoconnect       = "FALSE" ' >> $VM_VMX_FILE
+		if [ ! $VM_USE_USB = "FALSE" ]; then
+			echo 'usb.present = "TRUE"' >> $VM_VMX_FILE
+			echo 'usb.generic.autoconnect = "FALSE"' >> $VM_VMX_FILE
 		fi
-		if [ $VM_USE_SND = "FALSE" ]; then
-			echo 'sound.present                 = "FALSE" ' >> $VM_VMX_FILE
-		else
-			echo 'sound.present                 = "TRUE" ' >> $VM_VMX_FILE
-			echo 'sound.fileName                = "-1" ' >> $VM_VMX_FILE
-			echo 'sound.autodetect              = "TRUE" ' >> $VM_VMX_FILE
-			echo 'sound.startConnected          = "FALSE" ' >> $VM_VMX_FILE
+		if [ ! $VM_USE_SND = "FALSE" ]; then
+			echo 'sound.present = "TRUE"' >> $VM_VMX_FILE
+			echo 'sound.fileName = "-1"' >> $VM_VMX_FILE
+			echo 'sound.autodetect = "TRUE"' >> $VM_VMX_FILE
+			echo 'sound.startConnected = "FALSE"' >> $VM_VMX_FILE
 		fi
 		if [ $VM_USE_FDD = "FALSE" ]; then
-			echo 'floppy0.present               = "FALSE" ' >> $VM_VMX_FILE
+			echo 'floppy0.present = "FALSE"' >> $VM_VMX_FILE
 		else
-			echo 'floppy0.present               = "TRUE" ' >> $VM_VMX_FILE
-			echo 'floppy0.startConnected        = "FALSE" ' >> $VM_VMX_FILE
+			echo 'floppy0.present = "TRUE"' >> $VM_VMX_FILE
+			echo 'floppy0.startConnected = "FALSE"' >> $VM_VMX_FILE
 		fi
-		if [ $VM_USE_CDD = "FALSE" ]; then
-			echo 'ide0:1.present                = "FALSE" ' >> $VM_VMX_FILE
-			echo 'ide0:1.autodetect             = "TRUE" ' >> $VM_VMX_FILE
-		else
-			echo 'ide0:1.present                = "TRUE" ' >> $VM_VMX_FILE
-			echo 'ide0:1.fileName               = "auto detect" ' >> $VM_VMX_FILE
-			echo 'ide0:1.autodetect             = "TRUE" ' >> $VM_VMX_FILE
-			echo 'ide0:1.deviceType             = "cdrom-raw" ' >> $VM_VMX_FILE
-			echo 'ide0:1.startConnected         = "FALSE" ' >> $VM_VMX_FILE
+		if [ ! $VM_USE_CDD = "FALSE" ]; then
+			echo 'ide0:1.present = "TRUE"' >> $VM_VMX_FILE
+			echo 'ide0:1.fileName = "auto detect"' >> $VM_VMX_FILE
+			echo 'ide0:1.autodetect = "TRUE"' >> $VM_VMX_FILE
+			echo 'ide0:1.deviceType = "cdrom-raw"' >> $VM_VMX_FILE
+			echo 'ide0:1.startConnected = "FALSE"' >> $VM_VMX_FILE
 		fi
-		if [ $VM_USE_ISO = "FALSE" ]; then
-			echo 'ide1:0.present                = "FALSE" ' >> $VM_VMX_FILE
-			echo 'ide1:0.autodetect             = "TRUE" ' >> $VM_VMX_FILE
-		else
-			echo 'ide1:0.present                = "TRUE" ' >> $VM_VMX_FILE
-			echo 'ide1:0.fileName               = "'$VM_USE_ISO'" ' >> $VM_VMX_FILE
-			echo 'ide1:0.deviceType             = "cdrom-image" ' >> $VM_VMX_FILE
-			echo 'ide1:0.startConnected         = "TRUE" ' >> $VM_VMX_FILE
-			echo 'ide1:0.mode                   = "persistent" ' >> $VM_VMX_FILE
+		if [ ! $VM_USE_ISO = "FALSE" ]; then
+			echo 'ide1:0.present = "TRUE"' >> $VM_VMX_FILE
+			echo 'ide1:0.fileName = "'$VM_USE_ISO'"' >> $VM_VMX_FILE
+			echo 'ide1:0.deviceType = "cdrom-image"' >> $VM_VMX_FILE
+			echo 'ide1:0.startConnected = "TRUE"' >> $VM_VMX_FILE
+			echo 'ide1:0.mode = "persistent"' >> $VM_VMX_FILE
 		fi
-		echo 'annotation                    = "This VM is created by '$PROGRAM'..."' >> $VM_VMX_FILE
+		echo 'annotation = "This VM is created by '$PROGRAM'..."' >> $VM_VMX_FILE
 	StatusCheck
 }
 # Create the working dir
@@ -275,7 +271,7 @@ function CreateArchive(){
 		# Generate zipfile
 		StatusMsg "Generate zipfile...       "
 		cd $DEFAULT_WRKPATH
-		zip -q -r $VM_OUTP_FILE $WRKDIR/ &> /dev/null
+		zip -q -r $VM_OUTP_FILE $VM_NAME &> /dev/null
 		StatusCheck
 	fi
 }
@@ -377,7 +373,7 @@ VM_OS_TYPE=$1
 
 # Set default VM Name and output filename
 VM_NAME=$VM_OS_TYPE-vm
-VM_OUTP_FILE=`pwd`/$VM_OS_TYPE-vm.zip
+VM_OUTP_FILE=$VM_NAME.zip
 
 # Run OS test
 RunOsTest
@@ -421,7 +417,7 @@ while [ "$1" != "" ]; do
 	;;
 	-o | --output-file )
 		shift
-		VM_OUTP_FILE=`pwd`/$1
+		VM_OUTP_FILE=$1
 	;;
 	-r | --ram )
 		shift
@@ -467,7 +463,7 @@ done
 
 # The last parameters are set
 VM_DISK_SIZE=$VM_DISK_SIZE'Gb'
-WRKDIR=$DEFAULT_WRKPATH/$VM_OS_TYPE
+WRKDIR=$DEFAULT_WRKPATH/$VM_NAME
 VM_DISK_NAME=$VM_DISK_TYPE-$VM_OS_TYPE.vmdk
 VM_VMX_FILE=$WRKDIR/$VM_OS_TYPE.vmx
 
