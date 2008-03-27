@@ -6,13 +6,10 @@
 ### Todo ###
 # - Start VM with parameter, vmplayer and vmware
 # - Automatically register the VM with vmware server
-# - Create Virtual Disks with vmware-vdiskmanager by default
 # - Add ESX support
-# - Remove complaints about upgrading your VM
 # - Add tar.gz support.
 # - Beautify the way of creating the config file, first write it to a variable, then to file
 # - Named color codes
-# - Create more examples, give it a seperate option
 
 
 ### Some default variables ###
@@ -30,7 +27,7 @@ DEFAULT_QUIET=no		# Don't ask for confirmations, only when critical
 DEFAULT_YES=no			# Yes to al questions (warning: will overwrite existing files) 
 DEFAULT_ZIPIT=no		# Zip it after creation
 DEFAULT_STARTVM=no		# Start it after creation
-DEFAULT_WRKPATH=.       # Location where output will be
+DEFAULT_WRKPATH=.		# Location where output will be
 
 # Default VM parameters
 VM_CONF_VER=8			# VM Config version
@@ -136,6 +133,7 @@ VM Options:
  -b, --bios [PATH]              Path to custom bios file      (default: nvram)
 
  -o, --output-file [FILE]       Zip file to write output to   (default: <os-type>-vm.zip)
+ -w, --working-dir [PATH]       Path to use as Working Dir    (default: current working dir)
  -z, --zip                      Zip the Virtual Machine
 
 Program Options:
@@ -435,6 +433,10 @@ while [ "$1" != "" ]; do
 	;;
 	-v | --version )
 		PrintVersion
+	;;
+	-w | --working-dir )
+		shift
+		DEFAULT_WRKPATH=$1
 	;;
 	-x  )
 		DEFAULT_STARTVM="yes"
