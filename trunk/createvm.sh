@@ -170,7 +170,7 @@ Here are some examples:
 # Print a summary with some of the options on the screen
 function PrintSummary(){
 	Info "I am about to create this Virtual Machine:"
-		echo -e "    Virtual OS                \033[1m $VM_OS_TYPE \033[0;00m"
+		echo -e "    Guest OS                  \033[1m $VM_OS_TYPE \033[0;00m"
 		echo -e "    Display name              \033[1m $VM_NAME \033[0;00m"
 		echo -e "    RAM (MB)                  \033[1m $VM_RAM \033[0;00m"
 		echo -e "    HDD (GB)                  \033[1m $VM_DISK_SIZE \033[0;00m"
@@ -178,7 +178,6 @@ function PrintSummary(){
 		echo -e "    BIOS file                 \033[1m $VM_NVRAM \033[0;00m"
 		echo -e "    Ethernet Type             \033[1m $VM_ETH_TYPE \033[0;00m"
 		echo -e "    Mac Address               \033[1m $VM_MAC_ADDR \033[0;00m"
-		echo -e "    DISK type                 \033[1m $VM_DISK_TYPE \033[0;00m"
 		echo -e "    Floppy Disk               \033[1m $VM_USE_FDD \033[0;00m"
 		echo -e "    CD/DVD Drive              \033[1m $VM_USE_CDD \033[0;00m"
 		echo -e "    CD/DVD Iso                \033[1m $VM_USE_ISO \033[0;00m"
