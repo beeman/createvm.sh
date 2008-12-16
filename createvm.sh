@@ -11,9 +11,6 @@
 # - Beautify the way of creating the config file, first write it to a variable, then to file
 # - Named color codes
 
-PATH=$PATH:/opt/vmware/bin:/opt/vmware:/opt/vmware/lib
-
-
 ### Some default variables ###
 
 # Program info
@@ -281,7 +278,6 @@ function PrintOsList() {
     local max=${#SUPPORT_OS[@]}
     for ((i=0;i < max; i=i+3)) ; do
         printf "%-25s %-25s %-25s\n" ${SUPPORT_OS[$i]} ${SUPPORT_OS[$((i + 1))]} ${SUPPORT_OS[$((i + 2))]}
-        #echo ${SUPPORT_OS[$i]} ${SUPPORT_OS[$((i + 1))]} ${SUPPORT_OS[$((i + 2))]}
     done
 }
 # Check if selected OS is in the OS list
