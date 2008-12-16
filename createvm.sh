@@ -22,26 +22,26 @@ Distributed under GPL license No warranty whatsoever, express or implied."
 PROGRAM="$PROGRAM_NAME $PROGRAM_VER"
 
 # Default settings
-DEFAULT_QUIET=no		# Don't ask for confirmations, only when critical
-DEFAULT_YES=no			# Yes to al questions (warning: will overwrite existing files) 
-DEFAULT_ZIPIT=no		# Zip it after creation
-DEFAULT_STARTVM=no		# Start it after creation
-DEFAULT_WRKPATH=.		# Location where output will be
+DEFAULT_QUIET=no        # Don't ask for confirmations, only when critical
+DEFAULT_YES=no          # Yes to al questions (warning: will overwrite existing files) 
+DEFAULT_ZIPIT=no        # Zip it after creation
+DEFAULT_STARTVM=no      # Start it after creation
+DEFAULT_WRKPATH=.       # Location where output will be
 
 # Default VM parameters
-VM_CONF_VER=8			# VM Config version
-VM_VMHW_VER=4			# VM Hardware version
-VM_RAM=256				# Default RAM
-VM_NVRAM=nvram			# Default bios file
-VM_ETH_TYPE=bridged		# Default network type
-VM_MAC_ADDR=default		# Default MAC address
-VM_DISK_SIZE=8			# Default DISK size (GB's)
-VM_DISK_TYPE=SCSI		# Default DISK type
-VM_USE_USB=FALSE		# Enable USB
-VM_USE_SND=FALSE		# Enable sound
-VM_USE_CDD=FALSE		# Enable CD drive
-VM_USE_ISO=FALSE		# Enable and load ISO 
-VM_USE_FDD=FALSE		# Enable and load FDD
+VM_CONF_VER=8           # VM Config version
+VM_VMHW_VER=4           # VM Hardware version
+VM_RAM=256              # Default RAM
+VM_NVRAM=nvram          # Default bios file
+VM_ETH_TYPE=bridged     # Default network type
+VM_MAC_ADDR=default     # Default MAC address
+VM_DISK_SIZE=8          # Default DISK size (GB's)
+VM_DISK_TYPE=SCSI       # Default DISK type
+VM_USE_USB=FALSE        # Enable USB
+VM_USE_SND=FALSE        # Enable sound
+VM_USE_CDD=FALSE        # Enable CD drive
+VM_USE_ISO=FALSE        # Enable and load ISO 
+VM_USE_FDD=FALSE        # Enable and load FDD
 
 # This is the list of supported OS's
 SUPPORT_OS=(winVista longhorn winNetBusiness winNetEnterprise winNetStandard \
@@ -58,62 +58,62 @@ solaris netware6 netware5 netware4 netware freeBSD-64 freeBSD darwin other)
 
 # Show version info
 function PrintVersion() {
-	echo -e "\033[1m$PROGRAM - $PROGRAM_TITLE\033[0;00m."
-	echo -e $PROGRAM_COPYRIGHT
+    echo -e "\033[1m$PROGRAM - $PROGRAM_TITLE\033[0;00m."
+    echo -e $PROGRAM_COPYRIGHT
 }
 # Print status message
 function StatusMsg() {
-	echo -ne "\033[1m    \033[0;00m$1 "
+    echo -ne "\033[1m    \033[0;00m$1 "
 }
 # Print if cmd returned oke or failed
 function StatusCheck() {
-	if [[ $? -ne 0 ]] ; then
-		echo -e "\033[1;31m[FAILED]\033[0;00m"
-		exit 1;
-	else
-		echo -e "\033[1;32m[OK]\033[0;00m"
-	fi
+    if [[ $? -ne 0 ]] ; then
+        echo -e "\033[1;31m[FAILED]\033[0;00m"
+        exit 1;
+    else
+        echo -e "\033[1;32m[OK]\033[0;00m"
+    fi
 }
 # Print normal message
 function Message() {
-	echo -e "    $1 "
+    echo -e "    $1 "
 }
 # Print highlighted message
 function Info() {
-	echo -e "\033[1m    $1\033[0;00m "
+    echo -e "\033[1m    $1\033[0;00m "
 }
 # Print alert message
 function Alert() {
-	echo -e "\033[1m[!] \033[0;00m\033[1;31m$1\033[0;00m "
+    echo -e "\033[1m[!] \033[0;00m\033[1;31m$1\033[0;00m "
 }
 # Print error message
 function Error() {
-	echo -e "\033[1m[e] \033[0;00m\033[1;31m$1\033[0;00m "
+    echo -e "\033[1m[e] \033[0;00m\033[1;31m$1\033[0;00m "
 }
 # Ask if a user wants to continue, default to YES
 function AskOke(){
-	if [ ! "$DEFAULT_QUIET" = "yes" ]; 
-	then
-		echo -ne "\033[1m[?] Is it oke to continue?     \033[1;32m[Yn]\033[0;00m "
-		read YESNO
-		if [ "$YESNO" = "n" ] ; then Alert "Stopped..."; exit 0; fi
-	fi
+    if [ ! "$DEFAULT_QUIET" = "yes" ]; 
+    then
+        echo -ne "\033[1m[?] Is it oke to continue?     \033[1;32m[Yn]\033[0;00m "
+        read YESNO
+        if [ "$YESNO" = "n" ] ; then Alert "Stopped..."; exit 0; fi
+    fi
 }
 # Ask if a user wants to continue, default to NO
 function AskNoOke(){
-	if [ ! "$DEFAULT_YES" = "yes" ]; 
-	then
-		echo -ne "\033[1m[?] Is it oke to continue?     \033[1;31m[yN]\033[0;00m "
-		read YESNO
-		if [ ! "$YESNO" = "y" ]; then Alert "Stopped..."; exit 0; fi
-	fi
+    if [ ! "$DEFAULT_YES" = "yes" ]; 
+    then
+        echo -ne "\033[1m[?] Is it oke to continue?     \033[1;31m[yN]\033[0;00m "
+        read YESNO
+        if [ ! "$YESNO" = "y" ]; then Alert "Stopped..."; exit 0; fi
+    fi
 }
 
 ### Specific funtions ###
 
 # Print Help message
 function PrintUsage() {
-	echo -e "\033[1m$PROGRAM - $PROGRAM_TITLE\033[0;00m.
+    echo -e "\033[1m$PROGRAM - $PROGRAM_TITLE\033[0;00m.
 Usage: $PROGRAM_NAME GuestOS OPTIONS
 
 VM Options:
@@ -150,7 +150,7 @@ This program needs the 'zip' and 'vmware-vdiskmanager' binaries in its path..."
 }
 # Show some examples
 function PrintExamples(){
-	echo -e "\033[1m$PROGRAM - $PROGRAM_TITLE\033[0;00m.
+    echo -e "\033[1m$PROGRAM - $PROGRAM_TITLE\033[0;00m.
 Here are some examples:
 
  Create an Ubuntu Linux machine with a 20GB hard disk and a different name
@@ -163,117 +163,122 @@ Here are some examples:
    $ $PROGRAM_NAME winXPPro -r 512 -a -u -c 
 
  Create an Ubuntu VM with 512MB and run it in vmware
-   $ $PROGRAM_NAME ubuntu -r 512 -q -x"	
+   $ $PROGRAM_NAME ubuntu -r 512 -q -x"    
 }
-	
+    
 # Print a summary with some of the options on the screen
 function PrintSummary(){
-	Info "I am about to create this Virtual Machine:"
-		echo -e "    Guest OS                  \033[1m $VM_OS_TYPE \033[0;00m"
-		echo -e "    Display name              \033[1m $VM_NAME \033[0;00m"
-		echo -e "    RAM (MB)                  \033[1m $VM_RAM \033[0;00m"
-		echo -e "    HDD (GB)                  \033[1m $VM_DISK_SIZE \033[0;00m"
-		echo -e "    HDD Interface             \033[1m $VM_DISK_TYPE \033[0;00m"
-		echo -e "    BIOS file                 \033[1m $VM_NVRAM \033[0;00m"
-		echo -e "    Ethernet Type             \033[1m $VM_ETH_TYPE \033[0;00m"
-		echo -e "    Mac Address               \033[1m $VM_MAC_ADDR \033[0;00m"
-		echo -e "    Floppy Disk               \033[1m $VM_USE_FDD \033[0;00m"
-		echo -e "    CD/DVD Drive              \033[1m $VM_USE_CDD \033[0;00m"
-		echo -e "    CD/DVD Iso                \033[1m $VM_USE_ISO \033[0;00m"
-		echo -e "    USB                       \033[1m $VM_USE_USB \033[0;00m"
-		echo -e "    Sound Card                \033[1m $VM_USE_SND \033[0;00m"
-	AskOke
+    Info "I am about to create this Virtual Machine:"
+        echo -e "    Guest OS                  \033[1m $VM_OS_TYPE \033[0;00m"
+        echo -e "    Display name              \033[1m $VM_NAME \033[0;00m"
+        echo -e "    RAM (MB)                  \033[1m $VM_RAM \033[0;00m"
+        echo -e "    HDD (GB)                  \033[1m $VM_DISK_SIZE \033[0;00m"
+        echo -e "    HDD Interface             \033[1m $VM_DISK_TYPE \033[0;00m"
+        echo -e "    BIOS file                 \033[1m $VM_NVRAM \033[0;00m"
+        echo -e "    Ethernet Type             \033[1m $VM_ETH_TYPE \033[0;00m"
+        echo -e "    Mac Address               \033[1m $VM_MAC_ADDR \033[0;00m"
+        echo -e "    Floppy Disk               \033[1m $VM_USE_FDD \033[0;00m"
+        echo -e "    CD/DVD Drive              \033[1m $VM_USE_CDD \033[0;00m"
+        echo -e "    CD/DVD Iso                \033[1m $VM_USE_ISO \033[0;00m"
+        echo -e "    USB                       \033[1m $VM_USE_USB \033[0;00m"
+        echo -e "    Sound Card                \033[1m $VM_USE_SND \033[0;00m"
+    AskOke
 }
 # Create the .vmx file
 function CreateConf(){
-	StatusMsg "Creating config file...   "
-		# echo '#!/usr/bin/vmware' >> $VM_VMX_FILE
-		echo 'config.version = "'$VM_CONF_VER'"' >> $VM_VMX_FILE
-		echo 'virtualHW.version = "'$VM_VMHW_VER'"' >> $VM_VMX_FILE
-		echo 'displayName = "'$VM_NAME'"' >> $VM_VMX_FILE
-		echo 'guestOS = "'$VM_OS_TYPE'"' >> $VM_VMX_FILE
-		echo 'memsize = "'$VM_RAM'"' >> $VM_VMX_FILE
-		if [ ! $VM_NVRAM = "nvram" ]; then
-			FILENAME=`basename $VM_NVRAM`
-			cp $VM_NVRAM $WRKDIR/$FILENAME
-			echo 'nvram = "'$FILENAME'"' >> $VM_VMX_FILE
-		else
-			echo 'nvram = "'$VM_NVRAM'"' >> $VM_VMX_FILE
-		fi
-		echo 'ethernet0.present = "TRUE"' >> $VM_VMX_FILE
-		echo 'ethernet0.connectionType = "'$VM_ETH_TYPE'"' >> $VM_VMX_FILE
-		if [ ! $VM_MAC_ADDR = "default" ]; then
-			echo 'ethernet0.addressType = "static"' >> $VM_VMX_FILE
-			echo 'ethernet0.address = "'$VM_MAC_ADDR'"' >> $VM_VMX_FILE
-		else
-			echo 'ethernet0.addressType = "generated"' >> $VM_VMX_FILE
-		fi
-		if [ ! $VM_DISK_TYPE = "IDE" ]; then
-			echo 'scsi0:0.present = "TRUE"' >> $VM_VMX_FILE
-			echo 'scsi0:0.fileName = "'$VM_DISK_NAME'"' >> $VM_VMX_FILE
-		else 
-			echo 'ide0:0.present = "TRUE"' >> $VM_VMX_FILE
-			echo 'ide0:0.fileName = "'$VM_DISK_NAME'"' >> $VM_VMX_FILE
-		fi
-		if [ ! $VM_USE_USB = "FALSE" ]; then
-			echo 'usb.present = "TRUE"' >> $VM_VMX_FILE
-			echo 'usb.generic.autoconnect = "FALSE"' >> $VM_VMX_FILE
-		fi
-		if [ ! $VM_USE_SND = "FALSE" ]; then
-			echo 'sound.present = "TRUE"' >> $VM_VMX_FILE
-			echo 'sound.fileName = "-1"' >> $VM_VMX_FILE
-			echo 'sound.autodetect = "TRUE"' >> $VM_VMX_FILE
-			echo 'sound.startConnected = "FALSE"' >> $VM_VMX_FILE
-		fi
-		if [ $VM_USE_FDD = "FALSE" ]; then
-			echo 'floppy0.present = "FALSE"' >> $VM_VMX_FILE
-		else
-			echo 'floppy0.present = "TRUE"' >> $VM_VMX_FILE
-			echo 'floppy0.startConnected = "FALSE"' >> $VM_VMX_FILE
-		fi
-		if [ ! $VM_USE_CDD = "FALSE" ]; then
-			echo 'ide0:1.present = "TRUE"' >> $VM_VMX_FILE
-			echo 'ide0:1.fileName = "auto detect"' >> $VM_VMX_FILE
-			echo 'ide0:1.autodetect = "TRUE"' >> $VM_VMX_FILE
-			echo 'ide0:1.deviceType = "cdrom-raw"' >> $VM_VMX_FILE
-			echo 'ide0:1.startConnected = "FALSE"' >> $VM_VMX_FILE
-		fi
-		if [ ! $VM_USE_ISO = "FALSE" ]; then
-			echo 'ide1:0.present = "TRUE"' >> $VM_VMX_FILE
-			echo 'ide1:0.fileName = "'$VM_USE_ISO'"' >> $VM_VMX_FILE
-			echo 'ide1:0.deviceType = "cdrom-image"' >> $VM_VMX_FILE
-			echo 'ide1:0.startConnected = "TRUE"' >> $VM_VMX_FILE
-			echo 'ide1:0.mode = "persistent"' >> $VM_VMX_FILE
-		fi
-		echo 'annotation = "This VM is created by '$PROGRAM'..."' >> $VM_VMX_FILE
-	StatusCheck
+    StatusMsg "Creating config file...   "
+        # echo '#!/usr/bin/vmware' >> $VM_VMX_FILE
+        echo 'config.version = "'$VM_CONF_VER'"' >> "$VM_VMX_FILE"
+        echo 'virtualHW.version = "'$VM_VMHW_VER'"' >> "$VM_VMX_FILE"
+        echo 'displayName = "'$VM_NAME'"' >> "$VM_VMX_FILE"
+        echo 'guestOS = "'$VM_OS_TYPE'"' >> "$VM_VMX_FILE"
+        echo 'memsize = "'$VM_RAM'"' >> "$VM_VMX_FILE"
+        if [ ! $VM_NVRAM = "nvram" ]; then
+            FILENAME=`basename $VM_NVRAM`
+            cp $VM_NVRAM "$WRKDIR/$FILENAME"
+            echo 'nvram = "'$FILENAME'"' >> "$VM_VMX_FILE"
+        else
+            echo 'nvram = "'$VM_NVRAM'"' >> "$VM_VMX_FILE"
+        fi
+        echo 'ethernet0.present = "TRUE"' >> "$VM_VMX_FILE"
+        echo 'ethernet0.connectionType = "'$VM_ETH_TYPE'"' >> "$VM_VMX_FILE"
+        if [ ! $VM_MAC_ADDR = "default" ]; then
+            echo 'ethernet0.addressType = "static"' >> "$VM_VMX_FILE"
+            echo 'ethernet0.address = "'$VM_MAC_ADDR'"' >> "$VM_VMX_FILE"
+        else
+            echo 'ethernet0.addressType = "generated"' >> "$VM_VMX_FILE"
+        fi
+        if [ ! $VM_DISK_TYPE = "IDE" ]; then
+            echo 'scsi0:0.present = "TRUE"' >> "$VM_VMX_FILE"
+            echo 'scsi0:0.fileName = "'$VM_DISK_NAME'"' >> "$VM_VMX_FILE"
+        else 
+            echo 'ide0:0.present = "TRUE"' >> "$VM_VMX_FILE"
+            echo 'ide0:0.fileName = "'$VM_DISK_NAME'"' >> "$VM_VMX_FILE"
+        fi
+        if [ ! $VM_USE_USB = "FALSE" ]; then
+            echo 'usb.present = "TRUE"' >> "$VM_VMX_FILE"
+            echo 'usb.generic.autoconnect = "FALSE"' >> "$VM_VMX_FILE"
+        fi
+        if [ ! $VM_USE_SND = "FALSE" ]; then
+            echo 'sound.present = "TRUE"' >> "$VM_VMX_FILE"
+            echo 'sound.fileName = "-1"' >> "$VM_VMX_FILE"
+            echo 'sound.autodetect = "TRUE"' >> "$VM_VMX_FILE"
+            echo 'sound.startConnected = "FALSE"' >> "$VM_VMX_FILE"
+        fi
+        if [ $VM_USE_FDD = "FALSE" ]; then
+            echo 'floppy0.present = "FALSE"' >> "$VM_VMX_FILE"
+        else
+            echo 'floppy0.present = "TRUE"' >> "$VM_VMX_FILE"
+            echo 'floppy0.startConnected = "FALSE"' >> "$VM_VMX_FILE"
+        fi
+        if [ ! $VM_USE_CDD = "FALSE" ]; then
+            echo 'ide0:1.present = "TRUE"' >> "$VM_VMX_FILE"
+            echo 'ide0:1.fileName = "auto detect"' >> "$VM_VMX_FILE"
+            echo 'ide0:1.autodetect = "TRUE"' >> "$VM_VMX_FILE"
+            echo 'ide0:1.deviceType = "cdrom-raw"' >> "$VM_VMX_FILE"
+            echo 'ide0:1.startConnected = "FALSE"' >> "$VM_VMX_FILE"
+        fi
+        if [ ! $VM_USE_ISO = "FALSE" ]; then
+            echo 'ide1:0.present = "TRUE"' >> "$VM_VMX_FILE"
+            echo 'ide1:0.fileName = "'$VM_USE_ISO'"' >> "$VM_VMX_FILE"
+            echo 'ide1:0.deviceType = "cdrom-image"' >> "$VM_VMX_FILE"
+            echo 'ide1:0.startConnected = "TRUE"' >> "$VM_VMX_FILE"
+            echo 'ide1:0.mode = "persistent"' >> "$VM_VMX_FILE"
+        fi
+        echo 'annotation = "This VM is created by '$PROGRAM'..."' >> "$VM_VMX_FILE"
+    StatusCheck
 }
 # Create the working dir
 function CreateWorkingDir(){
-	StatusMsg "Creating working dir...   "
-		mkdir -p $WRKDIR &> /dev/null
-	StatusCheck
+    StatusMsg "Creating working dir...   "
+        mkdir -p "$WRKDIR" &> /dev/null
+    StatusCheck
 }
 # Create the virtual disk
 function CreateVirtualDisk(){
-	StatusMsg "Creating virtual disk...  "
-		vmware-vdiskmanager -c -a buslogic -t 1 -s $VM_DISK_SIZE $WRKDIR/$VM_DISK_NAME  &> /dev/null
-	StatusCheck
+    StatusMsg "Creating virtual disk...  "
+
+        local adapter=buslogic
+        if [ VM_DISK_TYPE == "IDE" ] ; then 
+            adapter=ide
+        fi
+        vmware-vdiskmanager -c -a $adapter -t 1 -s $VM_DISK_SIZE "$WRKDIR/$VM_DISK_NAME"  1> /dev/null
+    StatusCheck
 }
 # Generate a zip file with the created VM (TODO: needs tar.gz too)
 function CreateArchive(){
-	if [ "$DEFAULT_ZIPIT" = "yes" ]; 
-	then
-		# Generate zipfile
-		StatusMsg "Generate zipfile...       "
-		cd $DEFAULT_WRKPATH
-		zip -q -r $VM_OUTP_FILE $VM_NAME &> /dev/null
-		StatusCheck
-	fi
+    if [ "$DEFAULT_ZIPIT" = "yes" ]; 
+    then
+        # Generate zipfile
+        StatusMsg "Generate zipfile...       "
+        cd $DEFAULT_WRKPATH
+        zip -q -r $VM_OUTP_FILE $VM_NAME &> /dev/null
+        StatusCheck
+    fi
 }
 # Print OS list.
 function PrintOsList() {
-	echo "List of Guest Operating Systems:"
+    echo "List of Guest Operating Systems:"
 
     local max=${#SUPPORT_OS[@]}
     for ((i=0;i < max; i=i+3)) ; do
@@ -282,88 +287,88 @@ function PrintOsList() {
 }
 # Check if selected OS is in the OS list
 function RunOsTest(){
-	OS_SUPPORTED="no";
-	for OS in ${SUPPORT_OS[@]}
-	do 
-		if [ $OS = "$VM_OS_TYPE" ];
-		then
-			OS_SUPPORTED="yes";
-		fi
-	done
-	if [ ! $OS_SUPPORTED = "yes" ]; 
-	then
-		Error "Guest OS \"$VM_OS_TYPE\" is unknown..."
-		
-		Message "Run \"$PROGRAM_NAME -l\" for a list of Guest OS's..."
+    OS_SUPPORTED="no";
+    for OS in ${SUPPORT_OS[@]}
+    do 
+        if [ $OS = "$VM_OS_TYPE" ];
+        then
+            OS_SUPPORTED="yes";
+        fi
+    done
+    if [ ! $OS_SUPPORTED = "yes" ]; 
+    then
+        Error "Guest OS \"$VM_OS_TYPE\" is unknown..."
+        
+        Message "Run \"$PROGRAM_NAME -l\" for a list of Guest OS's..."
 
-		Message "Run \"$PROGRAM_NAME -h\" for help..."
-		Message "Run \"$PROGRAM_NAME -ex\" for examples..."
-		exit 1
-	fi
+        Message "Run \"$PROGRAM_NAME -h\" for help..."
+        Message "Run \"$PROGRAM_NAME -ex\" for examples..."
+        exit 1
+    fi
 }
 # Check for binaries and existance of previously created VM's
 function RunTests(){
-	# Check for needed binaries
-	Info "Creating Virtual Machine..."
-	StatusMsg " - vmware-vdiskmanager... "
-		which vmware-vdiskmanager &> /dev/null
-	StatusCheck
-	StatusMsg " - zip...                 "
-		which zip &> /dev/null
-	StatusCheck
-	# Check if working dir file exists
-	if [ -e $WRKDIR ]
-	then 
-		Alert "Working dir already exists, i will trash it!"
-		AskNoOke
-		StatusMsg "Trashing working dir...   "
-			rm -rf $WRKDIR &>/dev/null
-		StatusCheck
-	fi
-	# Check if zipfile exists
-	if [ "$DEFAULT_ZIPIT" = "yes" ]; 
-	then
-		if [ -e $VM_OUTP_FILE ]
-		then 
-			Alert "Zipfile already exists, i will trash it!"
-			AskNoOke
-			StatusMsg "Trashing zipfile...       "
-				rm $VM_OUTP_FILE &>/dev/null
-			StatusCheck
-		fi
-	fi
+    # Check for needed binaries
+    Info "Creating Virtual Machine..."
+    local app
+    for app in vmware-vdiskmanager zip ; do
+        StatusMsg " - $app... "
+        which $app &> /dev/null
+        StatusCheck
+    done
+    # Check if working dir file exists
+    if [ -e "$WRKDIR" ]
+    then 
+        Alert "Working dir already exists, i will trash it!"
+        AskNoOke
+        StatusMsg "Trashing working dir...   "
+        rm -rf "$WRKDIR" &>/dev/null
+        StatusCheck
+    fi
+    # Check if zipfile exists
+    if [ "$DEFAULT_ZIPIT" = "yes" ]; 
+    then
+        if [ -e $VM_OUTP_FILE ]
+        then 
+            Alert "Zipfile already exists, i will trash it!"
+            AskNoOke
+            StatusMsg "Trashing zipfile...       "
+            rm $VM_OUTP_FILE &>/dev/null
+            StatusCheck
+        fi
+    fi
 }
 # Clean up working dir and start VM (TODO: needs top be seperated)
 function CleanUp(){
-	# Back to base dir...
-	cd - &> /dev/null
-	# Clean up if zipped, and announce file location
-	if [ "$DEFAULT_ZIPIT" = "yes" ]; 
-	then 
-		StatusMsg "Cleaning up workingdir... "
-			rm -rf $WRKDIR
-		StatusCheck
-		Info "Grab you VM here: $VM_OUTP_FILE"
-	else
-		Info "Created VM here: $VM_VMX_FILE"
-	fi
+    # Back to base dir...
+    cd - &> /dev/null
+    # Clean up if zipped, and announce file location
+    if [ "$DEFAULT_ZIPIT" = "yes" ]; 
+    then 
+        StatusMsg "Cleaning up workingdir... "
+        rm -rf $WRKDIR
+        StatusCheck
+        Info "Grab you VM here: $VM_OUTP_FILE"
+    else
+        Info "Created VM here: $VM_VMX_FILE"
+    fi
 }
 # Start VM if asked for 
 function StartVM(){
-	if [ "$DEFAULT_STARTVM" = "yes" ];
-	then 
-		Info "Starting Virtual Machine..."
-		vmware $VMW_OPT $VM_VMX_FILE
-	fi
+    if [ "$DEFAULT_STARTVM" = "yes" ];
+    then 
+        Info "Starting Virtual Machine..."
+        vmware $VMW_OPT $VM_VMX_FILE
+    fi
 }
 
 ### The flow! ###
 
 # Chatch some parameters if the first one is not the OS.
 if [ "$1" = "" ] || [ "$1" = "-h" ] || [ "$1" = "--help" ]; then PrintUsage; exit; fi
-if [ "$1" = "-v" ] || [ "$1" = "--version" ]; 	then PrintVersion; exit; fi
-if [ "$1" = "-l" ] || [ "$1" = "--list" ]; 	then PrintOsList; exit 1; fi
-if [ "$1" = "-ex" ] || [ "$1" = "--sample" ]; 	then PrintExamples; exit 1; fi
+if [ "$1" = "-v" ] || [ "$1" = "--version" ];     then PrintVersion; exit; fi
+if [ "$1" = "-l" ] || [ "$1" = "--list" ];     then PrintOsList; exit 1; fi
+if [ "$1" = "-ex" ] || [ "$1" = "--sample" ];     then PrintExamples; exit 1; fi
 
 # The first parameter is the Guest OS Type
 VM_OS_TYPE=$1
@@ -378,95 +383,95 @@ RunOsTest
 # Shift through all parameters to search for options
 shift
 while [ "$1" != "" ]; do
-	case $1 in
-	-a | --audio )
-		VM_USE_SND="TRUE"
-	;;
-	-b | --bios )#
-		shift
-		VM_NVRAM=$1
-	;;
-	-c | --cdrom )
-		VM_USE_CDD="TRUE"
-	;;
-	-d | --disk-size )
-		shift
-		VM_DISK_SIZE=$1
-	;;
-	-e | --eth-type )
-		shift
-		VM_ETH_TYPE=$1
-	;;
-	-f | --floppy )
-		VM_USE_FDD="TRUE"
-	;;
-	-i | --iso )
-		shift
-		VM_USE_ISO=$1
-	;;
-	-m | --mac-addr )
-		shift
-		VM_MAC_ADDR=$1
-	;;
-	-n | --name )
-		shift
-		VM_NAME=$1
-	;;
-	-o | --output-file )
-		shift
-		VM_OUTP_FILE=$1
-	;;
-	-r | --ram )
-		shift
-		VM_RAM=$1
-	;;
-	-t | --disk-type )
-		shift
-		VM_DISK_TYPE=$1
-	;;
-	-u | --usb )
-		VM_USE_USB="TRUE"
-	;;
-	-q | --quiet )
-		DEFAULT_QUIET="yes"
-	;;
-	-v | --version )
-		PrintVersion
-	;;
-	-w | --working-dir )
-		shift
-		DEFAULT_WRKPATH=$1
-	;;
-	-x  )
-		DEFAULT_STARTVM="yes"
-		VMW_OPT="-x"
-	;;
-	-X  )
-		DEFAULT_STARTVM="yes"
-		VMW_OPT="-X"	
-	;;
-	-y | --yes )
-		DEFAULT_QUIET="yes"
-		DEFAULT_YES="yes"
-	;;
-	-z | --zip )
-		DEFAULT_ZIPIT="yes"
-	;;
-	* )
-		Error "Euhm... what did you mean by \"$*\"?"
-		Message "Run \"$PROGRAM_NAME -h\" for help"
-		Message "Run \"$PROGRAM_NAME -ex\" for examples..."
-		
-		exit 1
-	esac
-	shift
+    case $1 in
+    -a | --audio )
+        VM_USE_SND="TRUE"
+    ;;
+    -b | --bios )#
+        shift
+        VM_NVRAM=$1
+    ;;
+    -c | --cdrom )
+        VM_USE_CDD="TRUE"
+    ;;
+    -d | --disk-size )
+        shift
+        VM_DISK_SIZE=$1
+    ;;
+    -e | --eth-type )
+        shift
+        VM_ETH_TYPE=$1
+    ;;
+    -f | --floppy )
+        VM_USE_FDD="TRUE"
+    ;;
+    -i | --iso )
+        shift
+        VM_USE_ISO=$1
+    ;;
+    -m | --mac-addr )
+        shift
+        VM_MAC_ADDR=$1
+    ;;
+    -n | --name )
+        shift
+        VM_NAME=$1
+    ;;
+    -o | --output-file )
+        shift
+        VM_OUTP_FILE=$1
+    ;;
+    -r | --ram )
+        shift
+        VM_RAM=$1
+    ;;
+    -t | --disk-type )
+        shift
+        VM_DISK_TYPE=$1
+    ;;
+    -u | --usb )
+        VM_USE_USB="TRUE"
+    ;;
+    -q | --quiet )
+        DEFAULT_QUIET="yes"
+    ;;
+    -v | --version )
+        PrintVersion
+    ;;
+    -w | --working-dir )
+        shift
+        DEFAULT_WRKPATH=$1
+    ;;
+    -x  )
+        DEFAULT_STARTVM="yes"
+        VMW_OPT="-x"
+    ;;
+    -X  )
+        DEFAULT_STARTVM="yes"
+        VMW_OPT="-X"    
+    ;;
+    -y | --yes )
+        DEFAULT_QUIET="yes"
+        DEFAULT_YES="yes"
+    ;;
+    -z | --zip )
+        DEFAULT_ZIPIT="yes"
+    ;;
+    * )
+        Error "Euhm... what did you mean by \"$*\"?"
+        Message "Run \"$PROGRAM_NAME -h\" for help"
+        Message "Run \"$PROGRAM_NAME -ex\" for examples..."
+        
+        exit 1
+    esac
+    shift
 done
 
 # The last parameters are set
 VM_DISK_SIZE=$VM_DISK_SIZE'Gb'
-WRKDIR=$DEFAULT_WRKPATH/$VM_NAME
+WRKDIR="$DEFAULT_WRKPATH/$VM_NAME"
 VM_DISK_NAME=$VM_DISK_TYPE-$VM_OS_TYPE.vmdk
-VM_VMX_FILE=$WRKDIR/$VM_OS_TYPE.vmx
+VM_VMX_FILE="$WRKDIR/$VM_OS_TYPE.vmx"
 
 # Print banner
 PrintVersion
