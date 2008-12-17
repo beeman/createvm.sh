@@ -58,7 +58,7 @@ solaris netware6 netware5 netware4 netware freeBSD-64 freeBSD darwin other)
 
 # Show version info
 function PrintVersion() {
-    echo -e "\033[1m$PROGRAM - $PROGRAM_TITLE\033[0;00m."
+    echo -e "\033[1m$PROGRAM - $PROGRAM_TITLE\033[0;00m"
     echo -e $PROGRAM_COPYRIGHT
 }
 # Print status message
@@ -82,14 +82,23 @@ function Message() {
 function Info() {
     echo -e "\033[1m    $1\033[0;00m "
 }
+
+function _alert() {
+    local _type=$1
+    shift;
+    echo -e "\033[1m[$_type] \033[0;00m\033[1;31m$1\033[0;00m "
+}
+
 # Print alert message
 function Alert() {
-    echo -e "\033[1m[!] \033[0;00m\033[1;31m$1\033[0;00m "
+    _alert '!' "$@"
 }
+
 # Print error message
 function Error() {
-    echo -e "\033[1m[e] \033[0;00m\033[1;31m$1\033[0;00m "
+    _alert 'E' "$@"
 }
+
 # Ask if a user wants to continue, default to YES
 function AskOke(){
     if [ ! "$DEFAULT_QUIET" = "yes" ]; 
@@ -276,7 +285,7 @@ function CreateVirtualDisk(){
     StatusMsg "Creating virtual disk...  "
 
         local adapter=buslogic
-        if [ VM_DISK_TYPE == "IDE" ] ; then 
+        if [ "$VM_DISK_TYPE" = "IDE" ] ; then 
             adapter=ide
         fi
         vmware-vdiskmanager -c -a $adapter -t 1 -s $VM_DISK_SIZE "$WRKDIR/$VM_DISK_NAME"  1> /dev/null
