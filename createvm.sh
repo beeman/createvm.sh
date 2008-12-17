@@ -184,70 +184,87 @@ function PrintSummary(){
         echo -e "    Sound Card                \033[1m $VM_USE_SND \033[0;00m"
     AskOke
 }
+
+function add_config_param() {
+    if [ -n "$1" ] ; then
+        CONFIG_PARAM="$CONFIG_PARAM\n$*"
+    else
+        CONFIG_PARAM=""
+    fi
+}
+
+function print_config() {
+    echo -e $CONFIG_PARAM > "$VM_VMX_FILE"
+}
+
 # Create the .vmx file
 function CreateConf(){
+
     StatusMsg "Creating config file...   "
-        # echo '#!/usr/bin/vmware' >> $VM_VMX_FILE
-        echo 'config.version = "'$VM_CONF_VER'"' >> "$VM_VMX_FILE"
-        echo 'virtualHW.version = "'$VM_VMHW_VER'"' >> "$VM_VMX_FILE"
-        echo 'displayName = "'$VM_NAME'"' >> "$VM_VMX_FILE"
-        echo 'guestOS = "'$VM_OS_TYPE'"' >> "$VM_VMX_FILE"
-        echo 'memsize = "'$VM_RAM'"' >> "$VM_VMX_FILE"
-        if [ ! $VM_NVRAM = "nvram" ]; then
-            FILENAME=`basename $VM_NVRAM`
-            cp $VM_NVRAM "$WRKDIR/$FILENAME"
-            echo 'nvram = "'$FILENAME'"' >> "$VM_VMX_FILE"
-        else
-            echo 'nvram = "'$VM_NVRAM'"' >> "$VM_VMX_FILE"
-        fi
-        echo 'ethernet0.present = "TRUE"' >> "$VM_VMX_FILE"
-        echo 'ethernet0.connectionType = "'$VM_ETH_TYPE'"' >> "$VM_VMX_FILE"
-        if [ ! $VM_MAC_ADDR = "default" ]; then
-            echo 'ethernet0.addressType = "static"' >> "$VM_VMX_FILE"
-            echo 'ethernet0.address = "'$VM_MAC_ADDR'"' >> "$VM_VMX_FILE"
-        else
-            echo 'ethernet0.addressType = "generated"' >> "$VM_VMX_FILE"
-        fi
-        if [ ! $VM_DISK_TYPE = "IDE" ]; then
-            echo 'scsi0:0.present = "TRUE"' >> "$VM_VMX_FILE"
-            echo 'scsi0:0.fileName = "'$VM_DISK_NAME'"' >> "$VM_VMX_FILE"
-        else 
-            echo 'ide0:0.present = "TRUE"' >> "$VM_VMX_FILE"
-            echo 'ide0:0.fileName = "'$VM_DISK_NAME'"' >> "$VM_VMX_FILE"
-        fi
-        if [ ! $VM_USE_USB = "FALSE" ]; then
-            echo 'usb.present = "TRUE"' >> "$VM_VMX_FILE"
-            echo 'usb.generic.autoconnect = "FALSE"' >> "$VM_VMX_FILE"
-        fi
-        if [ ! $VM_USE_SND = "FALSE" ]; then
-            echo 'sound.present = "TRUE"' >> "$VM_VMX_FILE"
-            echo 'sound.fileName = "-1"' >> "$VM_VMX_FILE"
-            echo 'sound.autodetect = "TRUE"' >> "$VM_VMX_FILE"
-            echo 'sound.startConnected = "FALSE"' >> "$VM_VMX_FILE"
-        fi
-        if [ $VM_USE_FDD = "FALSE" ]; then
-            echo 'floppy0.present = "FALSE"' >> "$VM_VMX_FILE"
-        else
-            echo 'floppy0.present = "TRUE"' >> "$VM_VMX_FILE"
-            echo 'floppy0.startConnected = "FALSE"' >> "$VM_VMX_FILE"
-        fi
-        if [ ! $VM_USE_CDD = "FALSE" ]; then
-            echo 'ide0:1.present = "TRUE"' >> "$VM_VMX_FILE"
-            echo 'ide0:1.fileName = "auto detect"' >> "$VM_VMX_FILE"
-            echo 'ide0:1.autodetect = "TRUE"' >> "$VM_VMX_FILE"
-            echo 'ide0:1.deviceType = "cdrom-raw"' >> "$VM_VMX_FILE"
-            echo 'ide0:1.startConnected = "FALSE"' >> "$VM_VMX_FILE"
-        fi
-        if [ ! $VM_USE_ISO = "FALSE" ]; then
-            echo 'ide1:0.present = "TRUE"' >> "$VM_VMX_FILE"
-            echo 'ide1:0.fileName = "'$VM_USE_ISO'"' >> "$VM_VMX_FILE"
-            echo 'ide1:0.deviceType = "cdrom-image"' >> "$VM_VMX_FILE"
-            echo 'ide1:0.startConnected = "TRUE"' >> "$VM_VMX_FILE"
-            echo 'ide1:0.mode = "persistent"' >> "$VM_VMX_FILE"
-        fi
-        echo 'annotation = "This VM is created by '$PROGRAM'..."' >> "$VM_VMX_FILE"
+    # echo '#!/usr/bin/vmware' >> $VM_VMX_FILE
+    add_config_param 'config.version = "'$VM_CONF_VER'"'
+    add_config_param 'virtualHW.version = "'$VM_VMHW_VER'"'
+    add_config_param 'displayName = "'$VM_NAME'"'
+    add_config_param 'guestOS = "'$VM_OS_TYPE'"'
+    add_config_param 'memsize = "'$VM_RAM'"'
+    if [ ! $VM_NVRAM = "nvram" ]; then
+        FILENAME=`basename $VM_NVRAM`
+        cp $VM_NVRAM "$WRKDIR/$FILENAME"
+        add_config_param 'nvram = "'$FILENAME'"'
+    else
+    add_config_param 'nvram = "'$VM_NVRAM'"'
+    fi
+    add_config_param 'ethernet0.present = "TRUE"'
+    add_config_param 'ethernet0.connectionType = "'$VM_ETH_TYPE'"'
+    if [ ! $VM_MAC_ADDR = "default" ]; then
+        add_config_param 'ethernet0.addressType = "static"'
+        add_config_param 'ethernet0.address = "'$VM_MAC_ADDR'"'
+    else
+        add_config_param 'ethernet0.addressType = "generated"'
+    fi
+    if [ ! $VM_DISK_TYPE = "IDE" ]; then
+        add_config_param 'scsi0:0.present = "TRUE"'
+        add_config_param 'scsi0:0.fileName = "'$VM_DISK_NAME'"'
+    else 
+        add_config_param 'ide0:0.present = "TRUE"'
+        add_config_param 'ide0:0.fileName = "'$VM_DISK_NAME'"'
+    fi
+    if [ ! $VM_USE_USB = "FALSE" ]; then
+        add_config_param 'usb.present = "TRUE"'
+        add_config_param 'usb.generic.autoconnect = "FALSE"'
+    fi
+    if [ ! $VM_USE_SND = "FALSE" ]; then
+        add_config_param 'sound.present = "TRUE"'
+        add_config_param 'sound.fileName = "-1"'
+        add_config_param 'sound.autodetect = "TRUE"'
+        add_config_param 'sound.startConnected = "FALSE"'
+    fi
+    if [ $VM_USE_FDD = "FALSE" ]; then
+        add_config_param 'floppy0.present = "FALSE"'
+    else
+        add_config_param 'floppy0.present = "TRUE"'
+        add_config_param 'floppy0.startConnected = "FALSE"'
+    fi
+    if [ ! $VM_USE_CDD = "FALSE" ]; then
+        add_config_param 'ide0:1.present = "TRUE"'
+        add_config_param 'ide0:1.fileName = "auto detect"'
+        add_config_param 'ide0:1.autodetect = "TRUE"'
+        add_config_param 'ide0:1.deviceType = "cdrom-raw"'
+        add_config_param 'ide0:1.startConnected = "FALSE"'
+    fi
+
+    if [ ! $VM_USE_ISO = "FALSE" ]; then
+        add_config_param 'ide1:0.present = "TRUE"'
+        add_config_param 'ide1:0.fileName = "'$VM_USE_ISO'"'
+        add_config_param 'ide1:0.deviceType = "cdrom-image"'
+        add_config_param 'ide1:0.startConnected = "TRUE"'
+        add_config_param 'ide1:0.mode = "persistent"'
+    fi
+    add_config_param 'annotation = "This VM is created by '$PROGRAM'..."'
+    print_config
     StatusCheck
 }
+
 # Create the working dir
 function CreateWorkingDir(){
     StatusMsg "Creating working dir...   "
@@ -482,10 +499,10 @@ RunTests
 
 # Create working environment
 CreateWorkingDir
-# Create virtual disk
-CreateVirtualDisk
 # Write config file
 CreateConf
+# Create virtual disk
+CreateVirtualDisk
 # Create archine
 CreateArchive
 
