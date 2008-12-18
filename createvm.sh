@@ -48,7 +48,7 @@ SUPPORT_OS=(winVista longhorn winNetBusiness winNetEnterprise winNetStandard \
 winNetWeb winXPPro winXPHome win2000AdvServ win2000Serv win2000Pro winNT winMe \
 win98 win95 win31 windows winVista-64 longhorn-64 winNetEnterprise-64 \
 winNetStandard-64 winXPPro-64 ubuntu redhat rhel4 rhel3 rhel2 suse sles \
-mandrake nld9 sjds turbolinux other26xlinux other24xlinux linux ubuntu-64 \
+mandrake nld9 sjds turbolinux other26xlinux\ other24xlinux linux ubuntu-64 \
 rhel4-64 rhel3-64 sles-64 suse-64 other26xlinux-64 other24xlinux-64 other-64 \
 otherlinux-64 solaris10-64 solaris10 solaris9 solaris8 solaris7 solaris6 \
 solaris netware6 netware5 netware4 netware freeBSD-64 freeBSD darwin other)
@@ -127,18 +127,18 @@ Usage: $PROGRAM_NAME GuestOS OPTIONS
 
 VM Options:
  -n, --name [NAME]              Friendly name of the VM       (default: <os-type>-vm)
- -r, --ram [SIZE]               RAM size in MB                (default: 256)
- -d, --disk-size [SIZE]         HDD size in GB                (default: 8)
- -t, --disk-type [TYPE]         HDD Interface, SCSI or IDE    (default: SCSI)
- -e, --eth-type [TYPE]          Network Type (bridge/nat/etc) (default: bridged)
+ -r, --ram [SIZE]               RAM size in MB                (default: $VM_RAM)
+ -d, --disk-size [SIZE]         HDD size in GB                (default: $VM_DISK_SIZE)
+ -t, --disk-type [TYPE]         HDD Interface, SCSI or IDE    (default: $VM_DISK_TYPE)
+ -e, --eth-type [TYPE]          Network Type (bridge/nat/etc) (default: $VM_ETH_TYPE)
  -m, --mac-addr [ADDR]          Use static mac address        (address: 00:50:56:xx:xx:xx)
 
- -c, --cdrom                    Enable CDROM Drive            (default: FALSE)
- -i, --iso [FILE]               Enable CDROM Iso              (default: FALSE)
- -f, --floppy                   Enable Floppy Drive           (default: FALSE)
- -a, --audio                    Enable sound card             (default: FALSE)
- -u, --usb                      Enable USB                    (default: FALSE)
- -b, --bios [PATH]              Path to custom bios file      (default: nvram)
+ -c, --cdrom                    Enable CDROM Drive            (default: $VM_USE_CDD)
+ -i, --iso [FILE]               Enable CDROM Iso              (default: $VM_USE_ISO)
+ -f, --floppy                   Enable Floppy Drive           (default: $VM_USE_FDD)
+ -a, --audio                    Enable sound card             (default: $VM_USE_SND)
+ -u, --usb                      Enable USB                    (default: $VM_USE_USB)
+ -b, --bios [PATH]              Path to custom bios file      (default: $VM_NVRAM)
 
  -o, --output-file [FILE]       Zip file to write output to   (default: <os-type>-vm.zip)
  -w, --working-dir [PATH]       Path to use as Working Dir    (default: current working dir)
@@ -175,22 +175,28 @@ Here are some examples:
    $ $PROGRAM_NAME ubuntu -r 512 -q -x"    
 }
     
+function _print_summary_item() {
+    local item=$1
+    shift;
+    printf "    %-26s" "$item"
+    echo -e "\033[1m $* \033[0;00m"
+}
 # Print a summary with some of the options on the screen
 function PrintSummary(){
     Info "I am about to create this Virtual Machine:"
-        echo -e "    Guest OS                  \033[1m $VM_OS_TYPE \033[0;00m"
-        echo -e "    Display name              \033[1m $VM_NAME \033[0;00m"
-        echo -e "    RAM (MB)                  \033[1m $VM_RAM \033[0;00m"
-        echo -e "    HDD (GB)                  \033[1m $VM_DISK_SIZE \033[0;00m"
-        echo -e "    HDD Interface             \033[1m $VM_DISK_TYPE \033[0;00m"
-        echo -e "    BIOS file                 \033[1m $VM_NVRAM \033[0;00m"
-        echo -e "    Ethernet Type             \033[1m $VM_ETH_TYPE \033[0;00m"
-        echo -e "    Mac Address               \033[1m $VM_MAC_ADDR \033[0;00m"
-        echo -e "    Floppy Disk               \033[1m $VM_USE_FDD \033[0;00m"
-        echo -e "    CD/DVD Drive              \033[1m $VM_USE_CDD \033[0;00m"
-        echo -e "    CD/DVD Iso                \033[1m $VM_USE_ISO \033[0;00m"
-        echo -e "    USB                       \033[1m $VM_USE_USB \033[0;00m"
-        echo -e "    Sound Card                \033[1m $VM_USE_SND \033[0;00m"
+    _print_summary_item "Guest OS" $VM_OS_TYPE
+    _print_summary_item "Display name" $VM_NAME
+    _print_summary_item "RAM (MB)" $VM_RAM
+    _print_summary_item "HDD (Gb)" $VM_DISK_SIZE
+    _print_summary_item "HDD interface" $VM_DISK_TYPE
+    _print_summary_item "BIOS file" $VM_NVRAM
+    _print_summary_item "Ethernet type" $VM_ETH_TYPE
+    _print_summary_item "Mac address" $VM_MAC_ADDR
+    _print_summary_item "Floppy disk" $VM_USE_FDD
+    _print_summary_item "CD/DVD drive" $VM_USE_CDD
+    _print_summary_item "CD/DVD image" $VM_USE_ISO
+    _print_summary_item "USB device" $VM_USE_USB
+    _print_summary_item "Sound Card" $VM_USE_SND
     AskOke
 }
 
