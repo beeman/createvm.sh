@@ -117,6 +117,8 @@ function _ask_user() {
     [ -z $YESNO ] && YESNO=$1
     YESNO=$(echo $YESNO | tr A-Z a-z)
     if [ "$YESNO" = "n" ] || [ "$YESNO" = "no" ]  ; then log_alert "Stopped..."; exit 0; fi
+    # If it's not yes
+    [ ! "$YESNO" = "y" ] || [ "$YESNO" = "yes" ] && _ask_user $1
 }
 
 # Ask if a user wants to continue, default to YES
