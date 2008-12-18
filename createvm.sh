@@ -246,7 +246,7 @@ function create_conf(){
 
     if [ ! $VM_NVRAM = "nvram" ]; then
         FILENAME=$(basename $VM_NVRAM)
-        cp $VM_NVRAM "$WRKDIR/$FILENAME"
+        cp $VM_NVRAM "$WORKING_DIR/$FILENAME"
         add_config_param nvram $FILENAME
     else
         add_config_param nvram $VM_NVRAM
@@ -315,17 +315,15 @@ function create_conf(){
 function create_working_dir(){
     log_info "Creating Virtual Machine..."
     log_status "Creating working dir...   "
-    mkdir -p "$WRKDIR" &> /dev/null
+    mkdir -p "$WORKING_DIR" 1> /dev/null
     check_status
 }
 # Create the virtual disk
 function create_virtual_disk(){
     log_status "Creating virtual disk...  "
-
     local adapter=buslogic
     [ "$VM_DISK_TYPE" = "IDE" ] && adapter=ide
-
-    vmware-vdiskmanager -qq -c -a $adapter -t 1 -s $VM_DISK_SIZE "$WRKDIR/$VM_DISK_NAME" &> $LOGFILE
+    vmware-vdiskmanager -c -a $adapter -t 1 -s $VM_DISK_SIZE "$WORKING_DIR/$VM_DISK_NAME" &> $LOGFILE
     check_status
 }
 # Generate a zip or tar.gz archive
@@ -382,20 +380,20 @@ function run_tests(){
     fi
     # Check if working dir file exists
     log_info "Checking files and directories..."
-    if [ -e "$WRKDIR" ]; then
+    if [ -e "$WORKING_DIR" ]; then
         log_alert "Working dir already exists, i will trash it!"
         ask_no_oke
         log_status "Trashing working dir...   "
-        rm -rf "$WRKDIR" &>/dev/null
+        rm -rf "$WORKING_DIR" 1>/dev/null
         check_status
     fi
     # Check if zip file exists
     if [ "$DEFAULT_ZIPIT" = "yes" ]; then
         if [ -e "$VM_OUTP_FILE_ZIP" ]; then 
-            log_alert "Zipfile already exists, i will trash it!"
+            log_alert "zip file already exists, i will trash it!"
             ask_no_oke
-            log_status "Trashing zipfile...       "
-            rm "$VM_OUTP_FILE_ZIP" &>/dev/null
+            log_status "Trashing zip file...      "
+            rm "$VM_OUTP_FILE_ZIP" 1>/dev/null
             check_status
         fi
     fi
@@ -405,7 +403,7 @@ function run_tests(){
             log_alert "tar.gz file already exists, i will trash it!"
             ask_no_oke
             log_status "Trashing tar.gz file...   "
-            rm "$VM_OUTP_FILE_TAR" &>/dev/null
+            rm "$VM_OUTP_FILE_TAR" 1>/dev/null
             check_status
         fi
     fi
@@ -425,7 +423,7 @@ function clean_up(){
     fi
     if [ "$CLEANUP" = "yes" ]; then
         log_status "Cleaning up workingdir... "
-        rm -rf "$WRKDIR"
+        rm -rf "$WORKING_DIR"
         check_status
     else
         VMLOCATION="$VM_VMX_FILE"
@@ -543,7 +541,6 @@ while [ "$1" != "" ]; do
         log_error "Euhm... what do you mean by \"$*\"?"
         log_message "Run \"$PROGRAM_NAME -h\" for help"
         log_message "Run \"$PROGRAM_NAME -ex\" for examples..."
-        
         exit 1
     esac
     shift
@@ -554,10 +551,10 @@ VM_OUTP_FILE_ZIP="$VM_NAME.zip"
 VM_OUTP_FILE_TAR="$VM_NAME.tar.gz"
 
 # The last parameters are set
-VM_DISK_SIZE=$VM_DISK_SIZE'Gb'
-WRKDIR="$DEFAULT_WRKPATH/$VM_NAME"
-VM_DISK_NAME=$VM_DISK_TYPE-$VM_OS_TYPE.vmdk
-VM_VMX_FILE="$WRKDIR/$VM_OS_TYPE.vmx"
+WORKING_DIR="$DEFAULT_WRKPATH/$VM_NAME"
+VM_VMX_FILE="$WORKING_DIR/$VM_OS_TYPE.vmx"
+VM_DISK_NAME="$VM_DISK_TYPE-$VM_OS_TYPE.vmdk"
+VM_DISK_SIZE="$VM_DISK_SIZE""Gb"
 
 # Print banner
 version
