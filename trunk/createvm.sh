@@ -153,7 +153,6 @@ VM Options:
 
 Program Options:
  -w, --working-dir [PATH]       Path to use as Working Dir    (default: current working dir)
- -o, --output-file [FILE]       File to write archive to      (default: <os-type>-vm.zip/.tar.gz)
  -z, --zip                      Create .zip from this VM
  -g, --tar-gz                   Create .tar.gz from this VM
 
@@ -330,15 +329,15 @@ function create_archive(){
     if [ "$DEFAULT_ZIPIT" = "yes" ]; then
         # Generate zipfile
         log_status "Generate zip file...      "
-        cd $DEFAULT_WRKPATH
-        zip -q -r $VM_OUTP_FILE_ZIP $VM_NAME &> /dev/null
+        cd "$DEFAULT_WRKPATH"
+        zip -q -r "$VM_OUTP_FILE_ZIP" "$VM_NAME" 1> /dev/null
         check_status
     fi
     if [ "$DEFAULT_TARGZIT" = "yes" ]; then
         # Generate tar.gz file
         log_status "Generate tar.gz file...   "
-        cd $DEFAULT_WRKPATH
-        tar cvzf $VM_OUTP_FILE_TAR $VM_NAME &> /dev/null
+        cd "$DEFAULT_WRKPATH"
+        tar cvzf "$VM_OUTP_FILE_TAR" "$VM_NAME" 1> /dev/null
         check_status
     fi
 }
@@ -346,7 +345,7 @@ function create_archive(){
 function list_guest_os() {
     echo "List of Guest Operating Systems:"
 
-    local max=${#SUPPORT_OS[@]}
+    local max="${#SUPPORT_OS[@]}"
     for ((i=0;i < max; i=i+3)) ; do
         printf "%-25s %-25s %-25s\n" ${SUPPORT_OS[$i]} ${SUPPORT_OS[$((i + 1))]} ${SUPPORT_OS[$((i + 2))]}
     done
@@ -422,7 +421,7 @@ function clean_up(){
     fi
     if [ "$CLEANUP" = "yes" ]; then
         log_status "Cleaning up workingdir... "
-        rm -rf $WRKDIR
+        rm -rf "$WRKDIR"
         check_status
     else
         VMLOCATION="$VM_VMX_FILE"
@@ -433,7 +432,7 @@ function clean_up(){
 function start_vm(){
     if [ "$DEFAULT_START_VM" = "yes" ]; then 
         log_info "Starting Virtual Machine..."
-        vmware $VMW_OPT $VM_VMX_FILE
+        vmware "$VMW_OPT" "$VM_VMX_FILE"
     fi
 }
 
@@ -446,12 +445,10 @@ if [ "$1" = "-l" ] || [ "$1" = "--list" ];     then list_guest_os; exit 1; fi
 if [ "$1" = "-ex" ] || [ "$1" = "--sample" ];     then print_examples; exit 1; fi
 
 # The first parameter is the Guest OS Type
-VM_OS_TYPE=$1
+VM_OS_TYPE="$1"
 
-# Set default VM Name and output filename
-VM_NAME=$VM_OS_TYPE-vm
-VM_OUTP_FILE_ZIP=$VM_NAME.zip
-VM_OUTP_FILE_TAR=$VM_NAME.tar.gz
+# Set default VM Name
+VM_NAME="$VM_OS_TYPE-vm"
 
 # Run OS test
 run_os_test
@@ -503,12 +500,7 @@ while [ "$1" != "" ]; do
     ;;
     -n | --name )
         shift
-        VM_NAME=$1
-    ;;
-    -o | --output-file )
-        shift
-        VM_OUTP_FILE_ZIP=$1
-        VM_OUTP_FILE_TAR=$1
+        VM_NAME="$1"
     ;;
     -r | --ram )
         shift
@@ -547,7 +539,7 @@ while [ "$1" != "" ]; do
         DEFAULT_ZIPIT="yes"
     ;;
     * )
-        log_error "Euhm... what did you mean by \"$*\"?"
+        log_error "Euhm... what do you mean by \"$*\"?"
         log_message "Run \"$PROGRAM_NAME -h\" for help"
         log_message "Run \"$PROGRAM_NAME -ex\" for examples..."
         
@@ -555,6 +547,10 @@ while [ "$1" != "" ]; do
     esac
     shift
 done
+
+# Set the names of the output files
+VM_OUTP_FILE_ZIP="$VM_NAME.zip"
+VM_OUTP_FILE_TAR="$VM_NAME.tar.gz"
 
 # The last parameters are set
 VM_DISK_SIZE=$VM_DISK_SIZE'Gb'
