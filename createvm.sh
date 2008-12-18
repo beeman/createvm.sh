@@ -206,7 +206,7 @@ function add_config_param() {
     if [ -n "$1" ] ; then
         local item=$1
         shift;
-        [ -n "$1" ] && CONFIG_PARAM="$CONFIG_PARAM\n$item = '$@'"
+        [ -n "$1" ] && CONFIG_PARAM="$CONFIG_PARAM\n$item = \"$@\""
     else
         CONFIG_PARAM=""
     fi
