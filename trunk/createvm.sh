@@ -15,8 +15,8 @@
 PROGRAM_NAME=`basename $0`
 PROGRAM_TITLE="Create VMware Virtual Machines in bash"
 PROGRAM_VER="0.5"
-PROGRAM_COPYRIGHT="2007-2008 copyright by Bram Borggreve. \
-Distributed under GPL license No warranty whatsoever, express or implied."
+PROGRAM_COPYRIGHT="Copyright 2007-2008. \
+Distributed under GPL license. No warranty whatsoever, express or implied."
 PROGRAM="$PROGRAM_NAME $PROGRAM_VER"
 
 # Default settings
@@ -354,7 +354,8 @@ function RunTests(){
     Info "Creating Virtual Machine..."
     local app
     for app in vmware-vdiskmanager zip ; do
-        StatusMsg " - $app... "
+        StatusMsg ""
+        printf "    %-22s" "$app..."
         which $app &> /dev/null
         StatusCheck
     done
@@ -399,23 +400,23 @@ function CleanUp(){
     # Clean up if zipped or tar-gzipped, and announce file location
     if [ "$DEFAULT_ZIPIT" = "yes" ]; 
     then 
-		CLEANUP='yes'
-		VMLOCATION="$VM_OUTP_FILE_ZIP $VMLOCATION"
-	fi
+        CLEANUP='yes'
+        VMLOCATION="$VM_OUTP_FILE_ZIP $VMLOCATION"
+    fi
     if [ "$DEFAULT_TARGZIT" = "yes" ]; 
     then 
-		CLEANUP='yes'
-		VMLOCATION="$VM_OUTP_FILE_TAR $VMLOCATION"
-	fi
+        CLEANUP='yes'
+        VMLOCATION="$VM_OUTP_FILE_TAR $VMLOCATION"
+    fi
     if [ "$CLEANUP" = "yes" ];
-	then
+    then
         StatusMsg "Cleaning up workingdir... "
         rm -rf $WRKDIR
         StatusCheck
     else
-		VMLOCATION="$VM_VMX_FILE"
+        VMLOCATION="$VM_VMX_FILE"
     fi
-	Info "Grab you VM here: $VMLOCATION"
+    Info "Grab you VM here: $VMLOCATION"
 }
 # Start VM if asked for 
 function StartVM(){
