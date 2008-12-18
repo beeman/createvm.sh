@@ -219,7 +219,6 @@ function print_config() {
 
 # Create the .vmx file
 function CreateConf(){
-
     StatusMsg "Creating config file...   "
     add_config_param config.version $VM_CONF_VER
     add_config_param virtualHW.version $VM_VMHW_VER
@@ -258,11 +257,11 @@ function CreateConf(){
         add_config_param sound.autodetect TRUE
         add_config_param sound.startConnected FALSE
     fi
-    if [ $VM_USE_FDD = "FALSE" ]; then
-        add_config_param floppy0.present FALSE
-    else
+    if [ ! $VM_USE_FDD = "FALSE" ]; then
         add_config_param floppy0.present TRUE
         add_config_param floppy0.startConnected FALSE
+    else
+        add_config_param floppy0.present FALSE
     fi
     if [ ! $VM_USE_CDD = "FALSE" ]; then
         add_config_param ide0:1.present TRUE
