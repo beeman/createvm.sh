@@ -19,6 +19,7 @@ PROGRAM_COPYRIGHT="Copyright 2007-2008. \
 Distributed under GPL license. No warranty whatsoever, express or implied."
 PROGRAM="$PROGRAM_NAME $PROGRAM_VER"
 LOGFILE=createvm.log
+BINARIES=(gzip tar vmware-vdiskmanager zip)
 
 # Default settings
 DEFAULT_QUIET=no        # Don't ask for confirmations, only when critical
@@ -156,7 +157,7 @@ Program Options:
  -ex, --sample                  Show some examples 
 
 Dependencies:
-This program needs the 'zip' and 'vmware-vdiskmanager' binaries in its path..."
+This program needs the following binaries in its path: ${BINARIES[@]}"
 }
 
 # Show some examples
@@ -355,10 +356,10 @@ function RunTests(){
     # Check for needed binaries
     Info "Checking binaries..."
     local app
-    for app in vmware-vdiskmanager zip ; do
+    for app in ${BINARIES[@]} ; do
         StatusMsg ""
         printf "    %-22s" "$app..."
-        which $app &> /dev/null
+        which $app 1> /dev/null
         StatusCheck
     done
     # Check if working dir file exists
