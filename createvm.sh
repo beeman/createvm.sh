@@ -48,7 +48,7 @@ SUPPORT_OS=(winVista longhorn winNetBusiness winNetEnterprise winNetStandard \
 winNetWeb winXPPro winXPHome win2000AdvServ win2000Serv win2000Pro winNT winMe \
 win98 win95 win31 windows winVista-64 longhorn-64 winNetEnterprise-64 \
 winNetStandard-64 winXPPro-64 ubuntu redhat rhel4 rhel3 rhel2 suse sles \
-mandrake nld9 sjds turbolinux other26xlinux\ other24xlinux linux ubuntu-64 \
+mandrake nld9 sjds turbolinux other26xlinux other24xlinux linux ubuntu-64 \
 rhel4-64 rhel3-64 sles-64 suse-64 other26xlinux-64 other24xlinux-64 other-64 \
 otherlinux-64 solaris10-64 solaris10 solaris9 solaris8 solaris7 solaris6 \
 solaris netware6 netware5 netware4 netware freeBSD-64 freeBSD darwin other)
