@@ -24,10 +24,11 @@ BINARIES=(gzip tar vmware-vdiskmanager zip)
 # Default settings
 DEFAULT_QUIET=no        # Don't ask for confirmations, only when critical
 DEFAULT_YES=no          # Yes to al questions (warning: will overwrite existing files) 
-DEFAULT_ZIPIT=no        # Zip it after creation
-DEFAULT_TARGZIT=no      # Tar+GZ it afger creation
-DEFAULT_STARTVM=no      # Start it after creation
+DEFAULT_ZIPIT=no        # Create .zip archive
+DEFAULT_TARGZIT=no      # Create .tar.gz archive 
+DEFAULT_START_VM=no      # Start VM after creating it
 DEFAULT_WRKPATH=.       # Location where output will be
+BINARY_TESTS="FALSE"
 
 # Default VM parameters
 VM_CONF_VER=8           # VM Config version
@@ -44,7 +45,7 @@ VM_USE_CDD=FALSE        # Enable CD drive
 VM_USE_ISO=FALSE        # Enable and load ISO 
 VM_USE_FDD=FALSE        # Enable and load FDD
 
-# This is the list of supported OS's
+# This is the list of supported OS'es
 SUPPORT_OS=(winVista longhorn winNetBusiness winNetEnterprise winNetStandard \
 winNetWeb winXPPro winXPHome win2000AdvServ win2000Serv win2000Pro winNT winMe \
 win98 win95 win31 windows winVista-64 longhorn-64 winNetEnterprise-64 \
@@ -58,16 +59,16 @@ solaris netware6 netware5 netware4 netware freeBSD-64 freeBSD darwin other)
 ### Main functions ###
 
 # Show version info
-function PrintVersion() {
+function print_version() {
     echo -e "\033[1m$PROGRAM - $PROGRAM_TITLE\033[0;00m"
     echo -e $PROGRAM_COPYRIGHT
 }
 # Print status message
-function StatusMsg() {
+function status_msg() {
     echo -ne "\033[1m    \033[0;00m$1 "
 }
 # Print if cmd returned oke or failed
-function StatusCheck() {
+function status_check() {
     if [[ $? -ne 0 ]] ; then
         echo -e "\033[1;31m[FAILED]\033[0;00m"
         exit 1;
@@ -76,11 +77,11 @@ function StatusCheck() {
     fi
 }
 # Print normal message
-function Message() {
+function message() {
     echo -e "    $1 "
 }
 # Print highlighted message
-function Info() {
+function info() {
     echo -e "\033[1m    $1\033[0;00m "
 }
 
@@ -91,38 +92,38 @@ function _alert() {
 }
 
 # Print alert message
-function Alert() {
+function alert() {
     _alert '!' "$@"
 }
 
 # Print error message
-function Error() {
+function error() {
     _alert 'E' "$@"
 }
 
 # Ask if a user wants to continue, default to YES
-function AskOke(){
+function ask_oke(){
     if [ ! "$DEFAULT_QUIET" = "yes" ]; 
     then
         echo -ne "\033[1m[?] Is it oke to continue?     \033[1;32m[Yn]\033[0;00m "
         read YESNO
-        if [ "$YESNO" = "n" ] ; then Alert "Stopped..."; exit 0; fi
+        if [ "$YESNO" = "n" ] ; then alert "Stopped..."; exit 0; fi
     fi
 }
 # Ask if a user wants to continue, default to NO
-function AskNoOke(){
+function ask_no_oke(){
     if [ ! "$DEFAULT_YES" = "yes" ]; 
     then
         echo -ne "\033[1m[?] Is it oke to continue?     \033[1;31m[yN]\033[0;00m "
         read YESNO
-        if [ ! "$YESNO" = "y" ]; then Alert "Stopped..."; exit 0; fi
+        if [ ! "$YESNO" = "y" ]; then alert "Stopped..."; exit 0; fi
     fi
 }
 
 ### Specific funtions ###
 
 # Print Help message
-function PrintUsage() {
+function print_usage() {
     echo -e "\033[1m$PROGRAM - $PROGRAM_TITLE\033[0;00m.
 Usage: $PROGRAM_NAME GuestOS OPTIONS
 
@@ -142,13 +143,13 @@ VM Options:
  -b, --bios [PATH]              Path to custom bios file      (default: $VM_NVRAM)
 
 Program Options:
- -o, --output-file [FILE]       Zip file to write output to   (default: <os-type>-vm.zip)
  -w, --working-dir [PATH]       Path to use as Working Dir    (default: current working dir)
+ -o, --output-file [FILE]       File to write archive to      (default: <os-type>-vm.zip/.tar.gz)
  -z, --zip                      Create .zip from this VM
  -g, --tar-gz                   Create .tar.gz from this VM
 
- -l, --list                     Generate a list of VMware Guest OSes
- -q, --quiet                    Runs without asking questions, take the default values
+ -l, --list                     Generate a list of VMware Guest OS'es
+ -q, --quiet                    Runs without asking questions, accept the default values
  -y, --yes                      Say YES to all questions. This overwrites existing files!! 
  -x, -X                         Start the Virtual Machine in vmware, X for fullscreen
 
@@ -161,7 +162,7 @@ This program needs the following binaries in its path: ${BINARIES[@]}"
 }
 
 # Show some examples
-function PrintExamples(){
+function print_examples(){
     echo -e "\033[1m$PROGRAM - $PROGRAM_TITLE\033[0;00m.
 Here are some examples:
 
@@ -186,8 +187,8 @@ function _print_summary_item() {
 }
 
 # Print a summary with some of the options on the screen
-function PrintSummary(){
-    Info "I am about to create this Virtual Machine:"
+function print_summary(){
+    info "I am about to create this Virtual Machine:"
     _print_summary_item "Guest OS" $VM_OS_TYPE
     _print_summary_item "Display name" $VM_NAME
     _print_summary_item "RAM (MB)" $VM_RAM
@@ -201,7 +202,7 @@ function PrintSummary(){
     _print_summary_item "CD/DVD image" $VM_USE_ISO
     _print_summary_item "USB device" $VM_USE_USB
     _print_summary_item "Sound Card" $VM_USE_SND
-    AskOke
+    ask_oke
 }
 
 function add_config_param() {
@@ -219,8 +220,8 @@ function print_config() {
 }
 
 # Create the .vmx file
-function CreateConf(){
-    StatusMsg "Creating config file...   "
+function create_conf(){
+    status_msg "Creating config file...   "
     add_config_param config.version $VM_CONF_VER
     add_config_param virtualHW.version $VM_VMHW_VER
     add_config_param displayName $VM_NAME
@@ -281,48 +282,48 @@ function CreateConf(){
     fi
     add_config_param annotation "This VM is created by $PROGRAM"
     print_config
-    StatusCheck
+    status_check
 }
 
 # Create the working dir
-function CreateWorkingDir(){
-    Info "Creating Virtual Machine..."
-    StatusMsg "Creating working dir...   "
+function create_working_dir(){
+    info "Creating Virtual Machine..."
+    status_msg "Creating working dir...   "
     mkdir -p "$WRKDIR" &> /dev/null
-    StatusCheck
+    status_check
 }
 # Create the virtual disk
-function CreateVirtualDisk(){
-    StatusMsg "Creating virtual disk...  "
+function create_virtual_disk(){
+    status_msg "Creating virtual disk...  "
 
     local adapter=buslogic
     if [ "$VM_DISK_TYPE" = "IDE" ] ; then 
          adapter=ide
     fi
     vmware-vdiskmanager -qq -c -a $adapter -t 1 -s $VM_DISK_SIZE "$WRKDIR/$VM_DISK_NAME" &> $LOGFILE
-    StatusCheck
+    status_check
 }
 # Generate a zip file with the created VM (TODO: needs tar.gz too)
-function CreateArchive(){
+function create_archive(){
     if [ "$DEFAULT_ZIPIT" = "yes" ]; 
     then
         # Generate zipfile
-        StatusMsg "Generate zip file...      "
+        status_msg "Generate zip file...      "
         cd $DEFAULT_WRKPATH
         zip -q -r $VM_OUTP_FILE_ZIP $VM_NAME &> /dev/null
-        StatusCheck
+        status_check
     fi
     if [ "$DEFAULT_TARGZIT" = "yes" ]; 
     then
         # Generate tar.gz file
-        StatusMsg "Generate tar.gz file...   "
+        status_msg "Generate tar.gz file...   "
         cd $DEFAULT_WRKPATH
         tar cvzf $VM_OUTP_FILE_TAR $VM_NAME &> /dev/null
-        StatusCheck
+        status_check
     fi
 }
 # Print OS list.
-function PrintOsList() {
+function print_os_list() {
     echo "List of Guest Operating Systems:"
 
     local max=${#SUPPORT_OS[@]}
@@ -331,7 +332,7 @@ function PrintOsList() {
     done
 }
 # Check if selected OS is in the OS list
-function RunOsTest(){
+function run_os_test(){
     OS_SUPPORTED="no";
     for OS in ${SUPPORT_OS[@]}
     do 
@@ -342,46 +343,44 @@ function RunOsTest(){
     done
     if [ ! $OS_SUPPORTED = "yes" ]; 
     then
-        Error "Guest OS \"$VM_OS_TYPE\" is unknown..."
-        
-        Message "Run \"$PROGRAM_NAME -l\" for a list of Guest OS's..."
-
-        Message "Run \"$PROGRAM_NAME -h\" for help..."
-        Message "Run \"$PROGRAM_NAME -ex\" for examples..."
+        error "Guest OS \"$VM_OS_TYPE\" is unknown..."
+        message "Run \"$PROGRAM_NAME -l\" for a list of Guest OS'es..."
+        message "Run \"$PROGRAM_NAME -h\" for help..."
+        message "Run \"$PROGRAM_NAME -ex\" for examples..."
         exit 1
     fi
 }
 # Check for binaries and existance of previously created VM's
-function RunTests(){
+function run_tests(){
     # Check for needed binaries
-    Info "Checking binaries..."
+    info "Checking binaries..."
     local app
     for app in ${BINARIES[@]} ; do
-        StatusMsg ""
+        status_msg ""
         printf "    %-22s" "$app..."
         which $app 1> /dev/null
-        StatusCheck
+        status_check
     done
     # Check if working dir file exists
-    Info "Checking files and directories..."
+    info "Checking files and directories..."
     if [ -e "$WRKDIR" ]
     then 
-        Alert "Working dir already exists, i will trash it!"
-        AskNoOke
-        StatusMsg "Trashing working dir...   "
+        alert "Working dir already exists, i will trash it!"
+        ask_no_oke
+        status_msg "Trashing working dir...   "
         rm -rf "$WRKDIR" &>/dev/null
-        StatusCheck
+        status_check
     fi
     # Check if zip file exists
     if [ "$DEFAULT_ZIPIT" = "yes" ]; 
     then
         if [ -e $VM_OUTP_FILE_ZIP ]
         then 
-            Alert "Zipfile already exists, i will trash it!"
-            AskNoOke
-            StatusMsg "Trashing zipfile...       "
+            alert "Zipfile already exists, i will trash it!"
+            ask_no_oke
+            status_msg "Trashing zipfile...       "
             rm $VM_OUTP_FILE_ZIP &>/dev/null
-            StatusCheck
+            status_check
         fi
     fi
     # Check if tar.gz file exists
@@ -389,16 +388,16 @@ function RunTests(){
     then
         if [ -e $VM_OUTP_FILE_TAR ]
         then 
-            Alert "tar.gz file already exists, i will trash it!"
-            AskNoOke
-            StatusMsg "Trashing tar.gz file...   "
+            alert "tar.gz file already exists, i will trash it!"
+            ask_no_oke
+            status_msg "Trashing tar.gz file...   "
             rm $VM_OUTP_FILE_TAR &>/dev/null
-            StatusCheck
+            status_check
         fi
     fi
 }
 # Clean up working dir and start VM (TODO: needs top be seperated)
-function CleanUp(){
+function clean_up(){
     # Back to base dir...
     cd - &> /dev/null
     # Clean up if zipped or tar-gzipped, and announce file location
@@ -414,19 +413,19 @@ function CleanUp(){
     fi
     if [ "$CLEANUP" = "yes" ];
     then
-        StatusMsg "Cleaning up workingdir... "
+        status_msg "Cleaning up workingdir... "
         rm -rf $WRKDIR
-        StatusCheck
+        status_check
     else
         VMLOCATION="$VM_VMX_FILE"
     fi
-    Info "Grab you VM here: $VMLOCATION"
+    info "Grab you VM here: $VMLOCATION"
 }
 # Start VM if asked for 
-function StartVM(){
-    if [ "$DEFAULT_STARTVM" = "yes" ];
+function start_vm(){
+    if [ "$DEFAULT_START_VM" = "yes" ];
     then 
-        Info "Starting Virtual Machine..."
+        info "Starting Virtual Machine..."
         vmware $VMW_OPT $VM_VMX_FILE
     fi
 }
@@ -434,10 +433,10 @@ function StartVM(){
 ### The flow! ###
 
 # Chatch some parameters if the first one is not the OS.
-if [ "$1" = "" ] || [ "$1" = "-h" ] || [ "$1" = "--help" ]; then PrintUsage; exit; fi
-if [ "$1" = "-v" ] || [ "$1" = "--version" ];     then PrintVersion; exit; fi
-if [ "$1" = "-l" ] || [ "$1" = "--list" ];     then PrintOsList; exit 1; fi
-if [ "$1" = "-ex" ] || [ "$1" = "--sample" ];     then PrintExamples; exit 1; fi
+if [ "$1" = "" ] || [ "$1" = "-h" ] || [ "$1" = "--help" ]; then print_usage; exit; fi
+if [ "$1" = "-v" ] || [ "$1" = "--version" ];     then print_version; exit; fi
+if [ "$1" = "-l" ] || [ "$1" = "--list" ];     then print_os_list; exit 1; fi
+if [ "$1" = "-ex" ] || [ "$1" = "--sample" ];     then print_examples; exit 1; fi
 
 # The first parameter is the Guest OS Type
 VM_OS_TYPE=$1
@@ -448,7 +447,7 @@ VM_OUTP_FILE_ZIP=$VM_NAME.zip
 VM_OUTP_FILE_TAR=$VM_NAME.tar.gz
 
 # Run OS test
-RunOsTest
+run_os_test
 
 # Shift through all parameters to search for options
 shift
@@ -460,6 +459,9 @@ while [ "$1" != "" ]; do
     -b | --bios )
         shift
         VM_NVRAM=$1
+    ;;
+    -B | --binary )
+        BINARY_TESTS="FALSE"
     ;;
     -c | --cdrom )
         VM_USE_CDD="TRUE"
@@ -510,18 +512,18 @@ while [ "$1" != "" ]; do
         DEFAULT_QUIET="yes"
     ;;
     -v | --version )
-        PrintVersion
+        print_version
     ;;
     -w | --working-dir )
         shift
         DEFAULT_WRKPATH=$1
     ;;
     -x  )
-        DEFAULT_STARTVM="yes"
+        DEFAULT_START_VM="yes"
         VMW_OPT="-x"
     ;;
     -X  )
-        DEFAULT_STARTVM="yes"
+        DEFAULT_START_VM="yes"
         VMW_OPT="-X"    
     ;;
     -y | --yes )
@@ -532,9 +534,9 @@ while [ "$1" != "" ]; do
         DEFAULT_ZIPIT="yes"
     ;;
     * )
-        Error "Euhm... what did you mean by \"$*\"?"
-        Message "Run \"$PROGRAM_NAME -h\" for help"
-        Message "Run \"$PROGRAM_NAME -ex\" for examples..."
+        error "Euhm... what did you mean by \"$*\"?"
+        message "Run \"$PROGRAM_NAME -h\" for help"
+        message "Run \"$PROGRAM_NAME -ex\" for examples..."
         
         exit 1
     esac
@@ -548,24 +550,24 @@ VM_DISK_NAME=$VM_DISK_TYPE-$VM_OS_TYPE.vmdk
 VM_VMX_FILE="$WRKDIR/$VM_OS_TYPE.vmx"
 
 # Print banner
-PrintVersion
+print_version
 # Display summary
-PrintSummary
+print_summary
 # Do some tests
-RunTests
+run_tests
 
 # Create working environment
-CreateWorkingDir
+create_working_dir
 # Write config file
-CreateConf
+create_conf
 # Create virtual disk
-CreateVirtualDisk
+create_virtual_disk
 # Create archine
-CreateArchive
+create_archive
 
 # Clean up environment
-CleanUp
+clean_up
 # Run the VM
-StartVM
+start_vm
 
 ### The End! ###
