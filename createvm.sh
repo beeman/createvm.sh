@@ -18,6 +18,7 @@ PROGRAM_VER="0.5"
 PROGRAM_COPYRIGHT="Copyright 2007-2008. \
 Distributed under GPL license. No warranty whatsoever, express or implied."
 PROGRAM="$PROGRAM_NAME $PROGRAM_VER"
+LOGFILE=createvm.log
 
 # Default settings
 DEFAULT_QUIET=no        # Don't ask for confirmations, only when critical
@@ -298,7 +299,7 @@ function CreateVirtualDisk(){
     if [ "$VM_DISK_TYPE" = "IDE" ] ; then 
          adapter=ide
     fi
-    vmware-vdiskmanager -c -a $adapter -t 1 -s $VM_DISK_SIZE "$WRKDIR/$VM_DISK_NAME"  &> /dev/null
+    vmware-vdiskmanager -qq -c -a $adapter -t 1 -s $VM_DISK_SIZE "$WRKDIR/$VM_DISK_NAME" &> $LOGFILE
     StatusCheck
 }
 # Generate a zip file with the created VM (TODO: needs tar.gz too)
