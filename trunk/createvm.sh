@@ -12,7 +12,7 @@
 # Program log_info
 PROGRAM_NAME=$(basename $0)
 PROGRAM_TITLE="Create VMware Virtual Machines in bash"
-PROGRAM_VER="0.5"
+PROGRAM_VER="0.6"
 PROGRAM_COPYRIGHT="Copyright 2007-2008. \
 Distributed under GPL V2 license. No warranty whatsoever, express or implied."
 PROGRAM="$PROGRAM_NAME $PROGRAM_VER"
