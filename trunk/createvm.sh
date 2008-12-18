@@ -7,7 +7,6 @@
 # - Start VM with parameter, vmplayer and vmware
 # - Automatically register the VM with vmware server
 # - Add ESX support
-# - Named color codes
 
 ### Some default variables ###
 
@@ -55,25 +54,30 @@ rhel4-64 rhel3-64 sles-64 suse-64 other26xlinux-64 other24xlinux-64 other-64 \
 otherlinux-64 solaris10-64 solaris10 solaris9 solaris8 solaris7 solaris6 \
 solaris netware6 netware5 netware4 netware freeBSD-64 freeBSD darwin other)
 
+# Some color codes
+COL_EMR="\033[1;31m"    # Bold red
+COL_EMG="\033[1;32m"    # Bold green
+COL_EMW="\033[1;37m"    # Bold white
+COL_RESET="\033[0;00m"  # Default colors
 
 ### Main functions ###
 
 # Show version info
 function version() {
-    echo -e "\033[1m$PROGRAM - $PROGRAM_TITLE\033[0;00m"
+    echo -e "${COL_EMW}$PROGRAM - $PROGRAM_TITLE${COL_RESET}"
     echo -e $PROGRAM_COPYRIGHT
 }
 # Print status log_message
 function status_msg() {
-    echo -ne "\033[1m    \033[0;00m$1 "
+    echo -ne "    $1 "
 }
 # Print if cmd returned oke or failed
 function check_status() {
     if [[ $? -ne 0 ]] ; then
-        echo -e "\033[1;31m[FAILED]\033[0;00m"
+        echo -e "${COL_EMR}[FAILED]${COL_RESET}"
         exit 1;
     else
-        echo -e "\033[1;32m[OK]\033[0;00m"
+        echo -e "${COL_EMG}[OK]${COL_RESET}"
     fi
 }
 # Print normal log_message
@@ -82,13 +86,13 @@ function log_message() {
 }
 # Print highlighted log_message
 function info() {
-    echo -e "\033[1m    $1\033[0;00m "
+    echo -e "${COL_EMW}    $1${COL_RESET} "
 }
 
 function _log_alert() {
     local _type=$1
     shift;
-    echo -e "\033[1m[$_type] \033[0;00m\033[1;31m$1\033[0;00m "
+    echo -e "${COL_EMW}[$_type] ${COL_RESET}${COL_EMR}$1${COL_RESET} "
 }
 
 # Print log_alert log_message
@@ -105,7 +109,7 @@ function log_error() {
 function ask_oke(){
     if [ ! "$DEFAULT_QUIET" = "yes" ]; 
     then
-        echo -ne "\033[1m[?] Is it oke to continue?     \033[1;32m[Yn]\033[0;00m "
+        echo -ne "${COL_EMW}[?] Is it oke to continue?     ${COL_EMG}[Yn]${COL_RESET} "
         read YESNO
         if [ "$YESNO" = "n" ] ; then log_alert "Stopped..."; exit 0; fi
     fi
@@ -114,7 +118,7 @@ function ask_oke(){
 function ask_no_oke(){
     if [ ! "$DEFAULT_YES" = "yes" ]; 
     then
-        echo -ne "\033[1m[?] Is it oke to continue?     \033[1;31m[yN]\033[0;00m "
+        echo -ne "${COL_EMW}[?] Is it oke to continue?     ${COL_EMR}[yN]${COL_RESET} "
         read YESNO
         if [ ! "$YESNO" = "y" ]; then log_alert "Stopped..."; exit 0; fi
     fi
@@ -122,9 +126,9 @@ function ask_no_oke(){
 
 ### Specific funtions ###
 
-# Print Help log_message
-function usage() {
-    echo -e "\033[1m$PROGRAM - $PROGRAM_TITLE\033[0;00m
+# Print Help message
+function print_usage() {
+    echo -e "${COL_EMW}$PROGRAM - $PROGRAM_TITLE${COL_RESET}.
 Usage: $PROGRAM_NAME GuestOS OPTIONS
 
 VM Options:
@@ -152,6 +156,7 @@ Program Options:
  -q, --quiet                    Runs without asking questions, accept the default values
  -y, --yes                      Say YES to all questions. This overwrites existing files!! 
  -B, --binary                   Disable the check on binaries
+ -M, --monochrome               Don't use colors
  -x, -X                         Start the Virtual Machine in vmware, X for fullscreen
 
  -h, --help                     This help screen
@@ -164,7 +169,7 @@ This program needs the following binaries in its path: ${BINARIES[@]}"
 
 # Show some examples
 function print_examples(){
-    echo -e "\033[1m$PROGRAM - $PROGRAM_TITLE\033[0;00m
+    echo -e "${COL_EMW}$PROGRAM - $PROGRAM_TITLE${COL_RESET}.
 Here are some examples:
 
  Create an Ubuntu Linux machine with a 20GB hard disk and a different name
@@ -184,7 +189,7 @@ function _summary_item() {
     local item=$1
     shift;
     printf "    %-26s" "$item"
-    echo -e "\033[1m $* \033[0;00m"
+    echo -e "${COL_EMW} $* ${COL_RESET}"
 }
 
 # Print a summary with some of the options on the screen
@@ -362,7 +367,7 @@ function run_tests(){
         local app
         for app in ${BINARIES[@]} ; do
             status_msg ""
-            printf "    %-22s" "$app..."
+            printf " - %-22s " "$app..."
             which $app 1> /dev/null
             check_status
         done
@@ -484,6 +489,12 @@ while [ "$1" != "" ]; do
     -m | --mac-addr )
         shift
         VM_MAC_ADDR=$1
+    ;;
+    -M | --monochrome )
+        COL_EMR=""
+        COL_EMG=""
+        COL_EMW=""
+        COL_RESET=""
     ;;
     -n | --name )
         shift
