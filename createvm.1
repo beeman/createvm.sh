@@ -1,0 +1,116 @@
+.TH "createvm" "1" "0.5" "Bram Borggreve" ""
+.SH "NAME"
+.LP 
+createvm \- Create VMware virtual machines from the command line
+.SH "SYNTAX"
+.LP 
+Create a Virtual Machine:
+.br 
+    createvm <\fIguest os\fP> [\fIoptions\fP] 
+.LP 
+List available Guest OS'es:
+.br 
+    createvm \fI\-l\fP
+.SH "DESCRIPTION"
+.LP 
+This script let's you create VMware virtual machines from the command line and run them in VMware. The VM's can be customized with some command line paramters.
+.SH "OPTIONS"
+.LP 
+Virtual Machine options:
+.TP 
+\fB\-n, \-\-name [NAME]\fR
+Friendly name of the VM       (default: <os\-type>\-vm)
+.TP 
+\fB\-r, \-\-ram [SIZE]\fR
+RAM size in MB                (default: 256)
+.TP 
+\fB\-d, \-\-disk\-size [SIZE]\fR
+HDD size in GB                (default: 8)
+.TP 
+\fB\-t, \-\-disk\-type [TYPE]\fR
+HDD Interface, SCSI or IDE    (default: SCSI)
+.TP 
+\fB\-e, \-\-eth\-type [TYPE]\fR
+Network Type (bridge/nat/etc) (default: bridged)
+.TP 
+\fB\-m, \-\-mac\-addr [ADDR]\fR
+Use static mac address        (address: 00:50:56:xx:xx:xx)
+.TP 
+\fB\-c, \-\-cdrom\fR
+Enable CDROM Drive            (default: FALSE)
+.TP 
+\fB\-i, \-\-iso [FILE]\fR
+Enable CDROM Iso              (default: FALSE)
+.TP 
+\fB\-f, \-\-floppy\fR
+Enable Floppy Drive           (default: FALSE)
+.TP 
+\fB\-a, \-\-audio\fR
+Enable sound card             (default: FALSE)
+.TP 
+\fB\-u, \-\-usb\fR
+Enable USB                    (default: FALSE)
+.TP 
+\fB\-b, \-\-bios [PATH]\fR
+Path to custom bios file      (default: nvram)
+.LP 
+Program options:
+.TP 
+\fB\-x [COMMAND]\fR
+Start the VM with this command 
+.TP 
+\fB\-w, \-\-working\-dir [PATH]\fR
+Path to use as Working Dir    (default: current working dir)
+.TP 
+\fB\-z, \-\-zip\fR
+Create .zip from this VM
+.TP 
+\fB\-g, \-\-tar\-gz\fR
+Create .tar.gz from this VM
+.TP 
+\fB\-l, \-\-list\fR
+Generate a list of VMware Guest OS'es
+.TP 
+\fB\-q, \-\-quiet\fR
+Runs without asking questions, accept the default values
+.TP 
+\fB\-y, \-\-yes\fR
+Say YES to all questions. This overwrites existing files!! 
+.TP 
+\fB\-B, \-\-binary\fR
+Disable the check on binaries
+.TP 
+\fB\-M, \-\-monochrome\fR
+Don't use colors
+.TP 
+\fB\-h, \-\-help\fR
+This help screen
+.TP 
+\fB\-v, \-\-version\fR
+Shows version information
+.TP 
+\fB\-ex, \-\-sample\fR
+Show some examples 
+.SH "FILES"
+.LP 
+\fI/usr/bin/createvm\fP
+.SH "EXAMPLES"
+.LP 
+Create an Ubuntu Linux VM with a 20GB hd and a custom name:
+.br 
+    createvm ubuntu \-d 20 \-n "My Ubuntu VM" 
+.LP 
+Silently create a SUSE Linux machine with 512MB ram, a fixed MAC address and zip it:
+.br 
+    createvm suse \-r 512 \-q \-m 00:50:56:01:25:00 \-z 
+.LP 
+Create a Windows XP machine with 512MB and audio, USB and CD enabled:
+.br 
+    createvm winXPPro \-r 512 \-a \-u \-c 
+.LP 
+Create an Ubuntu VM with 512MB and open and run it in vmware:
+.br 
+    createvm ubuntu \-r 512 \-x "vmware \-x"
+.SH "AUTHORS"
+.LP 
+Bram Borggreve <borggreve@gmail.com>
