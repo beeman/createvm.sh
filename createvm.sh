@@ -7,7 +7,6 @@
 # - Start VM with parameter, vmplayer and vmware
 # - Automatically register the VM with vmware server
 # - Add ESX support
-# - Add tar.gz support.
 # - Named color codes
 
 ### Some default variables ###
@@ -24,6 +23,7 @@ PROGRAM="$PROGRAM_NAME $PROGRAM_VER"
 DEFAULT_QUIET=no        # Don't ask for confirmations, only when critical
 DEFAULT_YES=no          # Yes to al questions (warning: will overwrite existing files) 
 DEFAULT_ZIPIT=no        # Zip it after creation
+DEFAULT_TARGZIT=no      # Tar+GZ it afger creation
 DEFAULT_STARTVM=no      # Start it after creation
 DEFAULT_WRKPATH=.       # Location where output will be
 
@@ -139,11 +139,12 @@ VM Options:
  -u, --usb                      Enable USB                    (default: $VM_USE_USB)
  -b, --bios [PATH]              Path to custom bios file      (default: $VM_NVRAM)
 
+Program Options:
  -o, --output-file [FILE]       Zip file to write output to   (default: <os-type>-vm.zip)
  -w, --working-dir [PATH]       Path to use as Working Dir    (default: current working dir)
- -z, --zip                      Zip the Virtual Machine
+ -z, --zip                      Create .zip from this VM
+ -g, --tar-gz                   Create .tar.gz from this VM
 
-Program Options:
  -l, --list                     Generate a list of VMware Guest OSes
  -q, --quiet                    Runs without asking questions, take the default values
  -y, --yes                      Say YES to all questions. This overwrites existing files!! 
@@ -291,11 +292,19 @@ function CreateWorkingDir(){
 function CreateVirtualDisk(){
     StatusMsg "Creating virtual disk...  "
 
+<<<<<<< .mine
+        local adapter=buslogic
+        if [ "$VM_DISK_TYPE" = "IDE" ] ; then 
+            adapter=ide
+        fi
+        vmware-vdiskmanager -c -a $adapter -t 1 -s $VM_DISK_SIZE "$WRKDIR/$VM_DISK_NAME"  &> /dev/null
+=======
     local adapter=buslogic
     if [ "$VM_DISK_TYPE" = "IDE" ] ; then 
          adapter=ide
     fi
     vmware-vdiskmanager -c -a $adapter -t 1 -s $VM_DISK_SIZE "$WRKDIR/$VM_DISK_NAME"  1> /dev/null
+>>>>>>> .r44
     StatusCheck
 }
 # Generate a zip file with the created VM (TODO: needs tar.gz too)
@@ -303,9 +312,17 @@ function CreateArchive(){
     if [ "$DEFAULT_ZIPIT" = "yes" ]; 
     then
         # Generate zipfile
-        StatusMsg "Generate zipfile...       "
+        StatusMsg "Generate zip file...      "
         cd $DEFAULT_WRKPATH
-        zip -q -r $VM_OUTP_FILE $VM_NAME &> /dev/null
+        zip -q -r $VM_OUTP_FILE_ZIP $VM_NAME &> /dev/null
+        StatusCheck
+    fi
+    if [ "$DEFAULT_TARGZIT" = "yes" ]; 
+    then
+        # Generate tar.gz file
+        StatusMsg "Generate tar.gz file...   "
+        cd $DEFAULT_WRKPATH
+        tar cvzf $VM_OUTP_FILE_TAR $VM_NAME &> /dev/null
         StatusCheck
     fi
 }
@@ -358,15 +375,27 @@ function RunTests(){
         rm -rf "$WRKDIR" &>/dev/null
         StatusCheck
     fi
-    # Check if zipfile exists
+    # Check if zip file exists
     if [ "$DEFAULT_ZIPIT" = "yes" ]; 
     then
-        if [ -e $VM_OUTP_FILE ]
+        if [ -e $VM_OUTP_FILE_ZIP ]
         then 
             Alert "Zipfile already exists, i will trash it!"
             AskNoOke
             StatusMsg "Trashing zipfile...       "
-            rm $VM_OUTP_FILE &>/dev/null
+            rm $VM_OUTP_FILE_ZIP &>/dev/null
+            StatusCheck
+        fi
+    fi
+    # Check if tar.gz file exists
+    if [ "$DEFAULT_TARGZIT" = "yes" ]; 
+    then
+        if [ -e $VM_OUTP_FILE_TAR ]
+        then 
+            Alert "tar.gz file already exists, i will trash it!"
+            AskNoOke
+            StatusMsg "Trashing tar.gz file...   "
+            rm $VM_OUTP_FILE_TAR &>/dev/null
             StatusCheck
         fi
     fi
@@ -375,16 +404,26 @@ function RunTests(){
 function CleanUp(){
     # Back to base dir...
     cd - &> /dev/null
-    # Clean up if zipped, and announce file location
+    # Clean up if zipped or tar-gzipped, and announce file location
     if [ "$DEFAULT_ZIPIT" = "yes" ]; 
     then 
+		CLEANUP='yes'
+		VMLOCATION="$VM_OUTP_FILE_ZIP $VMLOCATION"
+	fi
+    if [ "$DEFAULT_TARGZIT" = "yes" ]; 
+    then 
+		CLEANUP='yes'
+		VMLOCATION="$VM_OUTP_FILE_TAR $VMLOCATION"
+	fi
+    if [ "$CLEANUP" = "yes" ];
+	then
         StatusMsg "Cleaning up workingdir... "
         rm -rf $WRKDIR
         StatusCheck
-        Info "Grab you VM here: $VM_OUTP_FILE"
     else
-        Info "Created VM here: $VM_VMX_FILE"
+		VMLOCATION="$VM_VMX_FILE"
     fi
+	Info "Grab you VM here: $VMLOCATION"
 }
 # Start VM if asked for 
 function StartVM(){
@@ -408,7 +447,8 @@ VM_OS_TYPE=$1
 
 # Set default VM Name and output filename
 VM_NAME=$VM_OS_TYPE-vm
-VM_OUTP_FILE=$VM_NAME.zip
+VM_OUTP_FILE_ZIP=$VM_NAME.zip
+VM_OUTP_FILE_TAR=$VM_NAME.tar.gz
 
 # Run OS test
 RunOsTest
@@ -438,6 +478,9 @@ while [ "$1" != "" ]; do
     -f | --floppy )
         VM_USE_FDD="TRUE"
     ;;
+    -g | --tar-gz )
+        DEFAULT_TARGZIT="yes"
+    ;;
     -i | --iso )
         shift
         VM_USE_ISO=$1
@@ -452,7 +495,8 @@ while [ "$1" != "" ]; do
     ;;
     -o | --output-file )
         shift
-        VM_OUTP_FILE=$1
+        VM_OUTP_FILE_ZIP=$1
+        VM_OUTP_FILE_TAR=$1
     ;;
     -r | --ram )
         shift
