@@ -292,19 +292,11 @@ function CreateWorkingDir(){
 function CreateVirtualDisk(){
     StatusMsg "Creating virtual disk...  "
 
-<<<<<<< .mine
-        local adapter=buslogic
-        if [ "$VM_DISK_TYPE" = "IDE" ] ; then 
-            adapter=ide
-        fi
-        vmware-vdiskmanager -c -a $adapter -t 1 -s $VM_DISK_SIZE "$WRKDIR/$VM_DISK_NAME"  &> /dev/null
-=======
     local adapter=buslogic
     if [ "$VM_DISK_TYPE" = "IDE" ] ; then 
          adapter=ide
     fi
-    vmware-vdiskmanager -c -a $adapter -t 1 -s $VM_DISK_SIZE "$WRKDIR/$VM_DISK_NAME"  1> /dev/null
->>>>>>> .r44
+    vmware-vdiskmanager -c -a $adapter -t 1 -s $VM_DISK_SIZE "$WRKDIR/$VM_DISK_NAME"  &> /dev/null
     StatusCheck
 }
 # Generate a zip file with the created VM (TODO: needs tar.gz too)
