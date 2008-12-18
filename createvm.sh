@@ -112,13 +112,14 @@ function _ask_user() {
     elif [ "$1" = "n" ] ; then
         msg="${COL_EMR}[yN]"
     fi
-    echo -ne "\033[1m[?] Is it oke to continue?     $msg $COL_RESET"
+    echo -ne "${COL_EMW}[?] Is it oke to continue?     $msg $COL_RESET"
     read YESNO
     [ -z $YESNO ] && YESNO=$1
     YESNO=$(echo $YESNO | tr A-Z a-z)
     if [ "$YESNO" = "n" ] || [ "$YESNO" = "no" ]  ; then log_alert "Stopped..."; exit 0; fi
     # If it's not yes
-    [ ! "$YESNO" = "y" ] || [ "$YESNO" = "yes" ] && _ask_user $1
+    [ "$YESNO" = "y" ] || [ "$YESNO" = "yes" ] && return
+    _ask_user $1
 }
 
 # Ask if a user wants to continue, default to YES
@@ -326,7 +327,7 @@ function create_virtual_disk(){
     vmware-vdiskmanager -qq -c -a $adapter -t 1 -s $VM_DISK_SIZE "$WRKDIR/$VM_DISK_NAME" &> $LOGFILE
     check_status
 }
-# Generate a zip file with the created VM (TODO: needs tar.gz too)
+# Generate a zip or tar.gz archive
 function create_archive(){
     if [ "$DEFAULT_ZIPIT" = "yes" ]; then
         # Generate zipfile
@@ -408,7 +409,7 @@ function run_tests(){
         fi
     fi
 }
-# Clean up working dir and start VM (TODO: needs top be seperated)
+# Clean up working dir
 function clean_up(){
     # Back to base dir...
     cd - &> /dev/null
