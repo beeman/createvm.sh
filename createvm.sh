@@ -204,7 +204,9 @@ function PrintSummary(){
 
 function add_config_param() {
     if [ -n "$1" ] ; then
-        CONFIG_PARAM="$CONFIG_PARAM\n$*"
+        local item=$1
+        shift;
+        [ -n "$1" ] && CONFIG_PARAM="$CONFIG_PARAM\n$item = '$@'"
     else
         CONFIG_PARAM=""
     fi
@@ -219,65 +221,65 @@ function CreateConf(){
 
     StatusMsg "Creating config file...   "
     # echo '#!/usr/bin/vmware' >> $VM_VMX_FILE
-    add_config_param 'config.version = "'$VM_CONF_VER'"'
-    add_config_param 'virtualHW.version = "'$VM_VMHW_VER'"'
-    add_config_param 'displayName = "'$VM_NAME'"'
-    add_config_param 'guestOS = "'$VM_OS_TYPE'"'
-    add_config_param 'memsize = "'$VM_RAM'"'
+    add_config_param config.version $VM_CONF_VER
+    add_config_param virtualHW.version $VM_VMHW_VER
+    add_config_param displayName $VM_NAME
+    add_config_param guestOS $VM_OS_TYPE
+    add_config_param memsize $VM_RAM
     if [ ! $VM_NVRAM = "nvram" ]; then
         FILENAME=`basename $VM_NVRAM`
         cp $VM_NVRAM "$WRKDIR/$FILENAME"
-        add_config_param 'nvram = "'$FILENAME'"'
+        add_config_param nvram $FILENAME
     else
-    add_config_param 'nvram = "'$VM_NVRAM'"'
+    add_config_param nvram $VM_NVRAM
     fi
-    add_config_param 'ethernet0.present = "TRUE"'
-    add_config_param 'ethernet0.connectionType = "'$VM_ETH_TYPE'"'
+    add_config_param ethernet0.present TRUE
+    add_config_param ethernet0.connectionType $VM_ETH_TYPE
     if [ ! $VM_MAC_ADDR = "default" ]; then
-        add_config_param 'ethernet0.addressType = "static"'
-        add_config_param 'ethernet0.address = "'$VM_MAC_ADDR'"'
+        add_config_param ethernet0.addressType static
+        add_config_param ethernet0.address $VM_MAC_ADDR
     else
-        add_config_param 'ethernet0.addressType = "generated"'
+        add_config_param ethernet0.addressType generated
     fi
     if [ ! $VM_DISK_TYPE = "IDE" ]; then
-        add_config_param 'scsi0:0.present = "TRUE"'
-        add_config_param 'scsi0:0.fileName = "'$VM_DISK_NAME'"'
+        add_config_param scsi0:0.present TRUE
+        add_config_param scsi0:0.fileName $VM_DISK_NAME
     else 
-        add_config_param 'ide0:0.present = "TRUE"'
-        add_config_param 'ide0:0.fileName = "'$VM_DISK_NAME'"'
+        add_config_param ide0:0.present TRUE
+        add_config_param ide0:0.fileName $VM_DISK_NAME
     fi
     if [ ! $VM_USE_USB = "FALSE" ]; then
-        add_config_param 'usb.present = "TRUE"'
-        add_config_param 'usb.generic.autoconnect = "FALSE"'
+        add_config_param usb.present TRUE
+        add_config_param usb.generic.autoconnect FALSE
     fi
     if [ ! $VM_USE_SND = "FALSE" ]; then
-        add_config_param 'sound.present = "TRUE"'
-        add_config_param 'sound.fileName = "-1"'
-        add_config_param 'sound.autodetect = "TRUE"'
-        add_config_param 'sound.startConnected = "FALSE"'
+        add_config_param sound.present TRUE
+        add_config_param sound.fileName -1
+        add_config_param sound.autodetect TRUE
+        add_config_param sound.startConnected FALSE
     fi
     if [ $VM_USE_FDD = "FALSE" ]; then
-        add_config_param 'floppy0.present = "FALSE"'
+        add_config_param floppy0.present FALSE
     else
-        add_config_param 'floppy0.present = "TRUE"'
-        add_config_param 'floppy0.startConnected = "FALSE"'
+        add_config_param floppy0.present TRUE
+        add_config_param floppy0.startConnected FALSE
     fi
     if [ ! $VM_USE_CDD = "FALSE" ]; then
-        add_config_param 'ide0:1.present = "TRUE"'
-        add_config_param 'ide0:1.fileName = "auto detect"'
-        add_config_param 'ide0:1.autodetect = "TRUE"'
-        add_config_param 'ide0:1.deviceType = "cdrom-raw"'
-        add_config_param 'ide0:1.startConnected = "FALSE"'
+        add_config_param ide0:1.present TRUE
+        add_config_param ide0:1.fileName auto detect
+        add_config_param ide0:1.autodetect TRUE
+        add_config_param ide0:1.deviceType cdrom-raw
+        add_config_param ide0:1.startConnected FALSE
     fi
 
     if [ ! $VM_USE_ISO = "FALSE" ]; then
-        add_config_param 'ide1:0.present = "TRUE"'
-        add_config_param 'ide1:0.fileName = "'$VM_USE_ISO'"'
-        add_config_param 'ide1:0.deviceType = "cdrom-image"'
-        add_config_param 'ide1:0.startConnected = "TRUE"'
-        add_config_param 'ide1:0.mode = "persistent"'
+        add_config_param ide1:0.present TRUE
+        add_config_param ide1:0.fileName $VM_USE_ISO
+        add_config_param ide1:0.deviceType cdrom-image
+        add_config_param ide1:0.startConnected TRUE
+        add_config_param ide1:0.mode persistent
     fi
-    add_config_param 'annotation = "This VM is created by '$PROGRAM'..."'
+    add_config_param annotation "This VM is created by $PROGRAM"
     print_config
     StatusCheck
 }
