@@ -220,7 +220,6 @@ function print_config() {
 function CreateConf(){
 
     StatusMsg "Creating config file...   "
-    # echo '#!/usr/bin/vmware' >> $VM_VMX_FILE
     add_config_param config.version $VM_CONF_VER
     add_config_param virtualHW.version $VM_VMHW_VER
     add_config_param displayName $VM_NAME
@@ -286,6 +285,7 @@ function CreateConf(){
 
 # Create the working dir
 function CreateWorkingDir(){
+    Info "Creating Virtual Machine..."
     StatusMsg "Creating working dir...   "
     mkdir -p "$WRKDIR" &> /dev/null
     StatusCheck
@@ -353,7 +353,7 @@ function RunOsTest(){
 # Check for binaries and existance of previously created VM's
 function RunTests(){
     # Check for needed binaries
-    Info "Creating Virtual Machine..."
+    Info "Checking binaries..."
     local app
     for app in vmware-vdiskmanager zip ; do
         StatusMsg ""
@@ -362,6 +362,7 @@ function RunTests(){
         StatusCheck
     done
     # Check if working dir file exists
+    Info "Checking files and directories..."
     if [ -e "$WRKDIR" ]
     then 
         Alert "Working dir already exists, i will trash it!"
