@@ -10,7 +10,7 @@
 
 ### Some default variables ###
 
-# Program info
+# Program log_info
 PROGRAM_NAME=$(basename $0)
 PROGRAM_TITLE="Create VMware Virtual Machines in bash"
 PROGRAM_VER="0.5"
@@ -62,13 +62,13 @@ COL_RESET="\033[0;00m"  # Default colors
 
 ### Main functions ###
 
-# Show version info
+# Show version log_info
 function version() {
     echo -e "${COL_EMW}$PROGRAM - $PROGRAM_TITLE${COL_RESET}"
     echo -e $PROGRAM_COPYRIGHT
 }
-# Print status log_message
-function status_msg() {
+# Print status message
+function log_status() {
     echo -ne "    $1 "
 }
 # Print if cmd returned oke or failed
@@ -80,12 +80,12 @@ function check_status() {
         echo -e "${COL_EMG}[OK]${COL_RESET}"
     fi
 }
-# Print normal log_message
+# Print normal message
 function log_message() {
     echo -e "    $1 "
 }
-# Print highlighted log_message
-function info() {
+# Print highlighted message
+function log_info() {
     echo -e "${COL_EMW}    $1${COL_RESET} "
 }
 
@@ -105,30 +105,35 @@ function log_error() {
     _log_alert 'E' "$@"
 }
 
+function _ask_user() {
+    local msg=""
+    if [ "$1" = "y" ] ; then
+        msg="${COL_EMG}[Yn]"
+    elif [ "$1" = "n" ] ; then
+        msg="${COL_EMR}[yN]"
+    fi
+    echo -ne "\033[1m[?] Is it oke to continue?     $msg $COL_RESET"
+    read YESNO
+    [ -z $YESNO ] && YESNO=$1
+    YESNO=$(echo $YESNO | tr A-Z a-z)
+    if [ "$YESNO" = "n" ] || [ "$YESNO" = "no" ]  ; then log_alert "Stopped..."; exit 0; fi
+}
+
 # Ask if a user wants to continue, default to YES
 function ask_oke(){
-    if [ ! "$DEFAULT_QUIET" = "yes" ]; 
-    then
-        echo -ne "${COL_EMW}[?] Is it oke to continue?     ${COL_EMG}[Yn]${COL_RESET} "
-        read YESNO
-        if [ "$YESNO" = "n" ] ; then log_alert "Stopped..."; exit 0; fi
-    fi
+    [ ! "$DEFAULT_QUIET" = "yes" ] && _ask_user y
 }
+
 # Ask if a user wants to continue, default to NO
 function ask_no_oke(){
-    if [ ! "$DEFAULT_YES" = "yes" ]; 
-    then
-        echo -ne "${COL_EMW}[?] Is it oke to continue?     ${COL_EMR}[yN]${COL_RESET} "
-        read YESNO
-        if [ ! "$YESNO" = "y" ]; then log_alert "Stopped..."; exit 0; fi
-    fi
+    [ ! "$DEFAULT_YES" = "yes" ] && _ask_user n
 }
 
 ### Specific funtions ###
 
 # Print Help message
-function print_usage() {
-    echo -e "${COL_EMW}$PROGRAM - $PROGRAM_TITLE${COL_RESET}.
+function usage() {
+    echo -e "${COL_EMW}$PROGRAM - $PROGRAM_TITLE${COL_RESET}
 Usage: $PROGRAM_NAME GuestOS OPTIONS
 
 VM Options:
@@ -169,7 +174,7 @@ This program needs the following binaries in its path: ${BINARIES[@]}"
 
 # Show some examples
 function print_examples(){
-    echo -e "${COL_EMW}$PROGRAM - $PROGRAM_TITLE${COL_RESET}.
+    echo -e "${COL_EMW}$PROGRAM - $PROGRAM_TITLE${COL_RESET}
 Here are some examples:
 
  Create an Ubuntu Linux machine with a 20GB hard disk and a different name
@@ -194,7 +199,7 @@ function _summary_item() {
 
 # Print a summary with some of the options on the screen
 function show_summary(){
-    info "I am about to create this Virtual Machine:"
+    log_info "I am about to create this Virtual Machine:"
     _summary_item "Guest OS" $VM_OS_TYPE
     _summary_item "Display name" $VM_NAME
     _summary_item "RAM (MB)" $VM_RAM
@@ -228,7 +233,7 @@ function print_config() {
 
 # Create the .vmx file
 function create_conf(){
-    status_msg "Creating config file...   "
+    log_status "Creating config file...   "
 
     add_config_param config.version $VM_CONF_VER
     add_config_param virtualHW.version $VM_VMHW_VER
@@ -305,14 +310,14 @@ function create_conf(){
 
 # Create the working dir
 function create_working_dir(){
-    info "Creating Virtual Machine..."
-    status_msg "Creating working dir...   "
+    log_info "Creating Virtual Machine..."
+    log_status "Creating working dir...   "
     mkdir -p "$WRKDIR" &> /dev/null
     check_status
 }
 # Create the virtual disk
 function create_virtual_disk(){
-    status_msg "Creating virtual disk...  "
+    log_status "Creating virtual disk...  "
 
     local adapter=buslogic
     [ "$VM_DISK_TYPE" = "IDE" ] && adapter=ide
@@ -324,14 +329,14 @@ function create_virtual_disk(){
 function create_archive(){
     if [ "$DEFAULT_ZIPIT" = "yes" ]; then
         # Generate zipfile
-        status_msg "Generate zip file...      "
+        log_status "Generate zip file...      "
         cd $DEFAULT_WRKPATH
         zip -q -r $VM_OUTP_FILE_ZIP $VM_NAME &> /dev/null
         check_status
     fi
     if [ "$DEFAULT_TARGZIT" = "yes" ]; then
         # Generate tar.gz file
-        status_msg "Generate tar.gz file...   "
+        log_status "Generate tar.gz file...   "
         cd $DEFAULT_WRKPATH
         tar cvzf $VM_OUTP_FILE_TAR $VM_NAME &> /dev/null
         check_status
@@ -363,21 +368,21 @@ function run_os_test(){
 function run_tests(){
     # Check for needed binaries
     if [ "$BINARY_TESTS" = "yes" ]; then
-        info "Checking binaries..."
+        log_info "Checking binaries..."
         local app
         for app in ${BINARIES[@]} ; do
-            status_msg ""
+            log_status ""
             printf " - %-22s " "$app..."
             which $app 1> /dev/null
             check_status
         done
     fi
     # Check if working dir file exists
-    info "Checking files and directories..."
+    log_info "Checking files and directories..."
     if [ -e "$WRKDIR" ]; then
         log_alert "Working dir already exists, i will trash it!"
         ask_no_oke
-        status_msg "Trashing working dir...   "
+        log_status "Trashing working dir...   "
         rm -rf "$WRKDIR" &>/dev/null
         check_status
     fi
@@ -386,7 +391,7 @@ function run_tests(){
         if [ -e $VM_OUTP_FILE_ZIP ]; then 
             log_alert "Zipfile already exists, i will trash it!"
             ask_no_oke
-            status_msg "Trashing zipfile...       "
+            log_status "Trashing zipfile...       "
             rm $VM_OUTP_FILE_ZIP &>/dev/null
             check_status
         fi
@@ -396,7 +401,7 @@ function run_tests(){
         if [ -e $VM_OUTP_FILE_TAR ]; then 
             log_alert "tar.gz file already exists, i will trash it!"
             ask_no_oke
-            status_msg "Trashing tar.gz file...   "
+            log_status "Trashing tar.gz file...   "
             rm $VM_OUTP_FILE_TAR &>/dev/null
             check_status
         fi
@@ -416,18 +421,18 @@ function clean_up(){
         VMLOCATION="$VM_OUTP_FILE_TAR $VMLOCATION"
     fi
     if [ "$CLEANUP" = "yes" ]; then
-        status_msg "Cleaning up workingdir... "
+        log_status "Cleaning up workingdir... "
         rm -rf $WRKDIR
         check_status
     else
         VMLOCATION="$VM_VMX_FILE"
     fi
-    info "Grab you VM here: $VMLOCATION"
+    log_info "Grab you VM here: $VMLOCATION"
 }
 # Start VM if asked for 
 function start_vm(){
     if [ "$DEFAULT_START_VM" = "yes" ]; then 
-        info "Starting Virtual Machine..."
+        log_info "Starting Virtual Machine..."
         vmware $VMW_OPT $VM_VMX_FILE
     fi
 }
