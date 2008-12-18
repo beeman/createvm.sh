@@ -8,7 +8,6 @@
 # - Automatically register the VM with vmware server
 # - Add ESX support
 # - Add tar.gz support.
-# - Beautify the way of creating the config file, first write it to a variable, then to file
 # - Named color codes
 
 ### Some default variables ###
@@ -157,6 +156,7 @@ Program Options:
 Dependencies:
 This program needs the 'zip' and 'vmware-vdiskmanager' binaries in its path..."
 }
+
 # Show some examples
 function PrintExamples(){
     echo -e "\033[1m$PROGRAM - $PROGRAM_TITLE\033[0;00m.
@@ -181,6 +181,7 @@ function _print_summary_item() {
     printf "    %-26s" "$item"
     echo -e "\033[1m $* \033[0;00m"
 }
+
 # Print a summary with some of the options on the screen
 function PrintSummary(){
     Info "I am about to create this Virtual Machine:"
@@ -283,18 +284,18 @@ function CreateConf(){
 # Create the working dir
 function CreateWorkingDir(){
     StatusMsg "Creating working dir...   "
-        mkdir -p "$WRKDIR" &> /dev/null
+    mkdir -p "$WRKDIR" &> /dev/null
     StatusCheck
 }
 # Create the virtual disk
 function CreateVirtualDisk(){
     StatusMsg "Creating virtual disk...  "
 
-        local adapter=buslogic
-        if [ "$VM_DISK_TYPE" = "IDE" ] ; then 
-            adapter=ide
-        fi
-        vmware-vdiskmanager -c -a $adapter -t 1 -s $VM_DISK_SIZE "$WRKDIR/$VM_DISK_NAME"  1> /dev/null
+    local adapter=buslogic
+    if [ "$VM_DISK_TYPE" = "IDE" ] ; then 
+         adapter=ide
+    fi
+    vmware-vdiskmanager -c -a $adapter -t 1 -s $VM_DISK_SIZE "$WRKDIR/$VM_DISK_NAME"  1> /dev/null
     StatusCheck
 }
 # Generate a zip file with the created VM (TODO: needs tar.gz too)
@@ -419,7 +420,7 @@ while [ "$1" != "" ]; do
     -a | --audio )
         VM_USE_SND="TRUE"
     ;;
-    -b | --bios )#
+    -b | --bios )
         shift
         VM_NVRAM=$1
     ;;
