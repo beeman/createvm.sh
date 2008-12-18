@@ -11,7 +11,7 @@
 
 # Program log_info
 PROGRAM_NAME=$(basename $0)
-PROGRAM_TITLE="Create VMware Virtual Machines in bash"
+PROGRAM_TITLE="Create VMware virtual machines from the command line"
 PROGRAM_VER="0.6"
 PROGRAM_COPYRIGHT="Copyright 2007-2008. \
 Distributed under GPL V2 license. No warranty whatsoever, express or implied."
@@ -42,6 +42,8 @@ VM_USE_SND=FALSE        # Enable sound
 VM_USE_CDD=FALSE        # Enable CD drive
 VM_USE_ISO=FALSE        # Enable and load ISO 
 VM_USE_FDD=FALSE        # Enable and load FDD
+VM_VNC_PASS=FALSE       # VNC password
+VM_VNC_PORT=FALSE       # VNC port 
 
 # This is the list of supported OS'es
 SUPPORT_OS=(winVista longhorn winNetBusiness winNetEnterprise winNetStandard \
@@ -152,7 +154,9 @@ VM Options:
  -a, --audio                    Enable sound card             (default: $VM_USE_SND)
  -u, --usb                      Enable USB                    (default: $VM_USE_USB)
  -b, --bios [PATH]              Path to custom bios file      (default: $VM_NVRAM)
-
+ 
+ -vnc [PASSWD]:[PORT]           Enable vnc support for this VM
+ 
 Program Options:
  -x [COMMAND]                   Start the VM with this command 
 
@@ -216,6 +220,9 @@ function show_summary(){
     _summary_item "CD/DVD image" $VM_USE_ISO
     _summary_item "USB device" $VM_USE_USB
     _summary_item "Sound Card" $VM_USE_SND
+    _summary_item "VNC Port" $VM_VNC_PORT
+    _summary_item "VNC Password" $VM_VNC_PASS
+
     ask_oke
 }
 
@@ -303,6 +310,13 @@ function create_conf(){
         add_config_param ide1:0.deviceType cdrom-image
         add_config_param ide1:0.startConnected TRUE
         add_config_param ide1:0.mode persistent
+    fi
+
+    if [ ! $VM_VNC_PASS = "FALSE" ]; then
+        add_config_param remotedisplay.vnc.enabled TRUE
+        add_config_param remotedisplay.vnc.port $VM_VNC_PORT
+        add_config_param remotedisplay.vnc.password $VM_VNC_PASS
+	
     fi
 
     add_config_param annotation "This VM is created by $PROGRAM"
@@ -520,6 +534,12 @@ while [ "$1" != "" ]; do
     ;;
     -v | --version )
         version
+    ;;
+    -vnc )
+        shift
+        VNC_PARAMS=$1
+        VM_VNC_PASS=$(echo $VNC_PARAMS | cut -d ":" -f 1)
+        VM_VNC_PORT=$(echo $VNC_PARAMS | cut -d ":" -f 2)
     ;;
     -w | --working-dir )
         shift
