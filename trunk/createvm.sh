@@ -389,21 +389,21 @@ function run_tests(){
     fi
     # Check if zip file exists
     if [ "$DEFAULT_ZIPIT" = "yes" ]; then
-        if [ -e $VM_OUTP_FILE_ZIP ]; then 
+        if [ -e "$VM_OUTP_FILE_ZIP" ]; then 
             log_alert "Zipfile already exists, i will trash it!"
             ask_no_oke
             log_status "Trashing zipfile...       "
-            rm $VM_OUTP_FILE_ZIP &>/dev/null
+            rm "$VM_OUTP_FILE_ZIP" &>/dev/null
             check_status
         fi
     fi
     # Check if tar.gz file exists
     if [ "$DEFAULT_TARGZIT" = "yes" ]; then
-        if [ -e $VM_OUTP_FILE_TAR ]; then 
+        if [ -e "$VM_OUTP_FILE_TAR" ]; then 
             log_alert "tar.gz file already exists, i will trash it!"
             ask_no_oke
             log_status "Trashing tar.gz file...   "
-            rm $VM_OUTP_FILE_TAR &>/dev/null
+            rm "$VM_OUTP_FILE_TAR" &>/dev/null
             check_status
         fi
     fi
