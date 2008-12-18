@@ -4,7 +4,6 @@
 # License: GPL, see: http://www.gnu.org/copyleft/gpl.txt
 
 ### Todo ###
-# - Start VM with parameter, vmplayer and vmware
 # - Automatically register the VM with vmware server
 # - Add ESX support
 
@@ -155,6 +154,8 @@ VM Options:
  -b, --bios [PATH]              Path to custom bios file      (default: $VM_NVRAM)
 
 Program Options:
+ -x [COMMAND]                   Start the VM with this command 
+
  -w, --working-dir [PATH]       Path to use as Working Dir    (default: current working dir)
  -z, --zip                      Create .zip from this VM
  -g, --tar-gz                   Create .tar.gz from this VM
@@ -164,8 +165,7 @@ Program Options:
  -y, --yes                      Say YES to all questions. This overwrites existing files!! 
  -B, --binary                   Disable the check on binaries
  -M, --monochrome               Don't use colors
- -x, -X                         Start the Virtual Machine in vmware, X for fullscreen
-
+ 
  -h, --help                     This help screen
  -v, --version                  Shows version information
  -ex, --sample                  Show some examples 
@@ -180,7 +180,7 @@ function print_examples(){
 Here are some examples:
 
  Create an Ubuntu Linux machine with a 20GB hard disk and a different name
-   $ $PROGRAM_NAME ubuntu -d 20 -n \My Ubuntu VM\ -o my-ubuntu-vm.zip 
+   $ $PROGRAM_NAME ubuntu -d 20 -n \"My Ubuntu VM\" 
 
  Silently create a SUSE Linux machine with 512MB ram, a fixed MAC address and zip it
    $ $PROGRAM_NAME suse -r 512 -q -m 00:50:56:01:25:00 -z 
@@ -188,8 +188,9 @@ Here are some examples:
  Create a Windows XP machine with 512MB and audio, USB and CD enabled
    $ $PROGRAM_NAME winXPPro -r 512 -a -u -c 
 
- Create an Ubuntu VM with 512MB and run it in vmware
-   $ $PROGRAM_NAME ubuntu -r 512 -q -x"    
+ Create an Ubuntu VM with 512MB and open and run it in vmware
+   $ $PROGRAM_NAME ubuntu -r 512 -x \"vmware -x\""
+
 }
     
 function _summary_item() {
@@ -435,7 +436,7 @@ function clean_up(){
 function start_vm(){
     if [ "$DEFAULT_START_VM" = "yes" ]; then 
         log_info "Starting Virtual Machine..."
-        vmware "$VMW_OPT" "$VM_VMX_FILE"
+        $VMW_BIN $VM_VMX_FILE
     fi
 }
 
@@ -527,12 +528,9 @@ while [ "$1" != "" ]; do
         DEFAULT_WRKPATH=$1
     ;;
     -x  )
+        shift
         DEFAULT_START_VM="yes"
-        VMW_OPT="-x"
-    ;;
-    -X  )
-        DEFAULT_START_VM="yes"
-        VMW_OPT="-X"    
+        VMW_BIN="$1"
     ;;
     -y | --yes )
         DEFAULT_QUIET="yes"
