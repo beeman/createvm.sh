@@ -12,11 +12,11 @@
 ### Some default variables ###
 
 # Program info
-PROGRAM_NAME=`basename $0`
+PROGRAM_NAME=$(basename $0)
 PROGRAM_TITLE="Create VMware Virtual Machines in bash"
 PROGRAM_VER="0.5"
 PROGRAM_COPYRIGHT="Copyright 2007-2008. \
-Distributed under GPL license. No warranty whatsoever, express or implied."
+Distributed under GPL V2 license. No warranty whatsoever, express or implied."
 PROGRAM="$PROGRAM_NAME $PROGRAM_VER"
 LOGFILE=createvm.log
 BINARIES=(gzip tar vmware-vdiskmanager zip)
@@ -59,16 +59,16 @@ solaris netware6 netware5 netware4 netware freeBSD-64 freeBSD darwin other)
 ### Main functions ###
 
 # Show version info
-function print_version() {
+function version() {
     echo -e "\033[1m$PROGRAM - $PROGRAM_TITLE\033[0;00m"
     echo -e $PROGRAM_COPYRIGHT
 }
-# Print status message
+# Print status log_message
 function status_msg() {
     echo -ne "\033[1m    \033[0;00m$1 "
 }
 # Print if cmd returned oke or failed
-function status_check() {
+function check_status() {
     if [[ $? -ne 0 ]] ; then
         echo -e "\033[1;31m[FAILED]\033[0;00m"
         exit 1;
@@ -76,29 +76,29 @@ function status_check() {
         echo -e "\033[1;32m[OK]\033[0;00m"
     fi
 }
-# Print normal message
-function message() {
+# Print normal log_message
+function log_message() {
     echo -e "    $1 "
 }
-# Print highlighted message
+# Print highlighted log_message
 function info() {
     echo -e "\033[1m    $1\033[0;00m "
 }
 
-function _alert() {
+function _log_alert() {
     local _type=$1
     shift;
     echo -e "\033[1m[$_type] \033[0;00m\033[1;31m$1\033[0;00m "
 }
 
-# Print alert message
-function alert() {
-    _alert '!' "$@"
+# Print log_alert log_message
+function log_alert() {
+    _log_alert '!' "$@"
 }
 
-# Print error message
-function error() {
-    _alert 'E' "$@"
+# Print log_error log_message
+function log_error() {
+    _log_alert 'E' "$@"
 }
 
 # Ask if a user wants to continue, default to YES
@@ -107,7 +107,7 @@ function ask_oke(){
     then
         echo -ne "\033[1m[?] Is it oke to continue?     \033[1;32m[Yn]\033[0;00m "
         read YESNO
-        if [ "$YESNO" = "n" ] ; then alert "Stopped..."; exit 0; fi
+        if [ "$YESNO" = "n" ] ; then log_alert "Stopped..."; exit 0; fi
     fi
 }
 # Ask if a user wants to continue, default to NO
@@ -116,15 +116,15 @@ function ask_no_oke(){
     then
         echo -ne "\033[1m[?] Is it oke to continue?     \033[1;31m[yN]\033[0;00m "
         read YESNO
-        if [ ! "$YESNO" = "y" ]; then alert "Stopped..."; exit 0; fi
+        if [ ! "$YESNO" = "y" ]; then log_alert "Stopped..."; exit 0; fi
     fi
 }
 
 ### Specific funtions ###
 
-# Print Help message
-function print_usage() {
-    echo -e "\033[1m$PROGRAM - $PROGRAM_TITLE\033[0;00m.
+# Print Help log_message
+function usage() {
+    echo -e "\033[1m$PROGRAM - $PROGRAM_TITLE\033[0;00m
 Usage: $PROGRAM_NAME GuestOS OPTIONS
 
 VM Options:
@@ -164,7 +164,7 @@ This program needs the following binaries in its path: ${BINARIES[@]}"
 
 # Show some examples
 function print_examples(){
-    echo -e "\033[1m$PROGRAM - $PROGRAM_TITLE\033[0;00m.
+    echo -e "\033[1m$PROGRAM - $PROGRAM_TITLE\033[0;00m
 Here are some examples:
 
  Create an Ubuntu Linux machine with a 20GB hard disk and a different name
@@ -180,7 +180,7 @@ Here are some examples:
    $ $PROGRAM_NAME ubuntu -r 512 -q -x"    
 }
     
-function _print_summary_item() {
+function _summary_item() {
     local item=$1
     shift;
     printf "    %-26s" "$item"
@@ -188,21 +188,21 @@ function _print_summary_item() {
 }
 
 # Print a summary with some of the options on the screen
-function print_summary(){
+function show_summary(){
     info "I am about to create this Virtual Machine:"
-    _print_summary_item "Guest OS" $VM_OS_TYPE
-    _print_summary_item "Display name" $VM_NAME
-    _print_summary_item "RAM (MB)" $VM_RAM
-    _print_summary_item "HDD (Gb)" $VM_DISK_SIZE
-    _print_summary_item "HDD interface" $VM_DISK_TYPE
-    _print_summary_item "BIOS file" $VM_NVRAM
-    _print_summary_item "Ethernet type" $VM_ETH_TYPE
-    _print_summary_item "Mac address" $VM_MAC_ADDR
-    _print_summary_item "Floppy disk" $VM_USE_FDD
-    _print_summary_item "CD/DVD drive" $VM_USE_CDD
-    _print_summary_item "CD/DVD image" $VM_USE_ISO
-    _print_summary_item "USB device" $VM_USE_USB
-    _print_summary_item "Sound Card" $VM_USE_SND
+    _summary_item "Guest OS" $VM_OS_TYPE
+    _summary_item "Display name" $VM_NAME
+    _summary_item "RAM (MB)" $VM_RAM
+    _summary_item "HDD (Gb)" $VM_DISK_SIZE
+    _summary_item "HDD interface" $VM_DISK_TYPE
+    _summary_item "BIOS file" $VM_NVRAM
+    _summary_item "Ethernet type" $VM_ETH_TYPE
+    _summary_item "Mac address" $VM_MAC_ADDR
+    _summary_item "Floppy disk" $VM_USE_FDD
+    _summary_item "CD/DVD drive" $VM_USE_CDD
+    _summary_item "CD/DVD image" $VM_USE_ISO
+    _summary_item "USB device" $VM_USE_USB
+    _summary_item "Sound Card" $VM_USE_SND
     ask_oke
 }
 
@@ -211,9 +211,10 @@ function add_config_param() {
         local item=$1
         shift;
         [ -n "$1" ] && CONFIG_PARAM="$CONFIG_PARAM\n$item = \"$@\""
-    else
-        CONFIG_PARAM=""
+        return
     fi
+    # if empty, then reset the config params
+    CONFIG_PARAM=""
 }
 
 function print_config() {
@@ -223,26 +224,31 @@ function print_config() {
 # Create the .vmx file
 function create_conf(){
     status_msg "Creating config file...   "
+
     add_config_param config.version $VM_CONF_VER
     add_config_param virtualHW.version $VM_VMHW_VER
     add_config_param displayName $VM_NAME
     add_config_param guestOS $VM_OS_TYPE
     add_config_param memsize $VM_RAM
+
     if [ ! $VM_NVRAM = "nvram" ]; then
-        FILENAME=`basename $VM_NVRAM`
+        FILENAME=$(basename $VM_NVRAM)
         cp $VM_NVRAM "$WRKDIR/$FILENAME"
         add_config_param nvram $FILENAME
     else
-    add_config_param nvram $VM_NVRAM
+        add_config_param nvram $VM_NVRAM
     fi
+
     add_config_param ethernet0.present TRUE
     add_config_param ethernet0.connectionType $VM_ETH_TYPE
+
     if [ ! $VM_MAC_ADDR = "default" ]; then
         add_config_param ethernet0.addressType static
         add_config_param ethernet0.address $VM_MAC_ADDR
     else
         add_config_param ethernet0.addressType generated
     fi
+
     if [ ! $VM_DISK_TYPE = "IDE" ]; then
         add_config_param scsi0:0.present TRUE
         add_config_param scsi0:0.fileName $VM_DISK_NAME
@@ -250,22 +256,26 @@ function create_conf(){
         add_config_param ide0:0.present TRUE
         add_config_param ide0:0.fileName $VM_DISK_NAME
     fi
+
     if [ ! $VM_USE_USB = "FALSE" ]; then
         add_config_param usb.present TRUE
         add_config_param usb.generic.autoconnect FALSE
     fi
+
     if [ ! $VM_USE_SND = "FALSE" ]; then
         add_config_param sound.present TRUE
         add_config_param sound.fileName -1
         add_config_param sound.autodetect TRUE
         add_config_param sound.startConnected FALSE
     fi
+
     if [ ! $VM_USE_FDD = "FALSE" ]; then
         add_config_param floppy0.present TRUE
         add_config_param floppy0.startConnected FALSE
     else
         add_config_param floppy0.present FALSE
     fi
+
     if [ ! $VM_USE_CDD = "FALSE" ]; then
         add_config_param ide0:1.present TRUE
         add_config_param ide0:1.fileName auto detect
@@ -281,9 +291,11 @@ function create_conf(){
         add_config_param ide1:0.startConnected TRUE
         add_config_param ide1:0.mode persistent
     fi
+
     add_config_param annotation "This VM is created by $PROGRAM"
+
     print_config
-    status_check
+    check_status
 }
 
 # Create the working dir
@@ -291,18 +303,17 @@ function create_working_dir(){
     info "Creating Virtual Machine..."
     status_msg "Creating working dir...   "
     mkdir -p "$WRKDIR" &> /dev/null
-    status_check
+    check_status
 }
 # Create the virtual disk
 function create_virtual_disk(){
     status_msg "Creating virtual disk...  "
 
     local adapter=buslogic
-    if [ "$VM_DISK_TYPE" = "IDE" ]; then 
-         adapter=ide
-    fi
+    [ "$VM_DISK_TYPE" = "IDE" ] && adapter=ide
+
     vmware-vdiskmanager -qq -c -a $adapter -t 1 -s $VM_DISK_SIZE "$WRKDIR/$VM_DISK_NAME" &> $LOGFILE
-    status_check
+    check_status
 }
 # Generate a zip file with the created VM (TODO: needs tar.gz too)
 function create_archive(){
@@ -311,18 +322,18 @@ function create_archive(){
         status_msg "Generate zip file...      "
         cd $DEFAULT_WRKPATH
         zip -q -r $VM_OUTP_FILE_ZIP $VM_NAME &> /dev/null
-        status_check
+        check_status
     fi
     if [ "$DEFAULT_TARGZIT" = "yes" ]; then
         # Generate tar.gz file
         status_msg "Generate tar.gz file...   "
         cd $DEFAULT_WRKPATH
         tar cvzf $VM_OUTP_FILE_TAR $VM_NAME &> /dev/null
-        status_check
+        check_status
     fi
 }
 # Print OS list.
-function print_os_list() {
+function list_guest_os() {
     echo "List of Guest Operating Systems:"
 
     local max=${#SUPPORT_OS[@]}
@@ -332,20 +343,16 @@ function print_os_list() {
 }
 # Check if selected OS is in the OS list
 function run_os_test(){
-    OS_SUPPORTED="no";
-    for OS in ${SUPPORT_OS[@]}
-    do 
-        if [ $OS = "$VM_OS_TYPE" ]; then
-            OS_SUPPORTED="yes";
-        fi
+    local OS
+    for OS in ${SUPPORT_OS[@]} ; do 
+        # Everything OK, no need to continue
+        [ $OS = "$VM_OS_TYPE" ] && return
     done
-    if [ ! $OS_SUPPORTED = "yes" ]; then
-        error "Guest OS \"$VM_OS_TYPE\" is unknown..."
-        message "Run \"$PROGRAM_NAME -l\" for a list of Guest OS'es..."
-        message "Run \"$PROGRAM_NAME -h\" for help..."
-        message "Run \"$PROGRAM_NAME -ex\" for examples..."
-        exit 1
-    fi
+    log_error "Guest OS \"$VM_OS_TYPE\" is unknown..."
+    log_message "Run \"$PROGRAM_NAME -l\" for a list of Guest OS'es..."
+    log_message "Run \"$PROGRAM_NAME -h\" for help..."
+    log_message "Run \"$PROGRAM_NAME -ex\" for examples..."
+    exit 1
 }
 # Check for binaries and existance of previously created VM's
 function run_tests(){
@@ -357,36 +364,36 @@ function run_tests(){
             status_msg ""
             printf "    %-22s" "$app..."
             which $app 1> /dev/null
-            status_check
+            check_status
         done
     fi
     # Check if working dir file exists
     info "Checking files and directories..."
     if [ -e "$WRKDIR" ]; then
-        alert "Working dir already exists, i will trash it!"
+        log_alert "Working dir already exists, i will trash it!"
         ask_no_oke
         status_msg "Trashing working dir...   "
         rm -rf "$WRKDIR" &>/dev/null
-        status_check
+        check_status
     fi
     # Check if zip file exists
     if [ "$DEFAULT_ZIPIT" = "yes" ]; then
         if [ -e $VM_OUTP_FILE_ZIP ]; then 
-            alert "Zipfile already exists, i will trash it!"
+            log_alert "Zipfile already exists, i will trash it!"
             ask_no_oke
             status_msg "Trashing zipfile...       "
             rm $VM_OUTP_FILE_ZIP &>/dev/null
-            status_check
+            check_status
         fi
     fi
     # Check if tar.gz file exists
     if [ "$DEFAULT_TARGZIT" = "yes" ]; then
         if [ -e $VM_OUTP_FILE_TAR ]; then 
-            alert "tar.gz file already exists, i will trash it!"
+            log_alert "tar.gz file already exists, i will trash it!"
             ask_no_oke
             status_msg "Trashing tar.gz file...   "
             rm $VM_OUTP_FILE_TAR &>/dev/null
-            status_check
+            check_status
         fi
     fi
 }
@@ -406,7 +413,7 @@ function clean_up(){
     if [ "$CLEANUP" = "yes" ]; then
         status_msg "Cleaning up workingdir... "
         rm -rf $WRKDIR
-        status_check
+        check_status
     else
         VMLOCATION="$VM_VMX_FILE"
     fi
@@ -423,9 +430,9 @@ function start_vm(){
 ### The flow! ###
 
 # Chatch some parameters if the first one is not the OS.
-if [ "$1" = "" ] || [ "$1" = "-h" ] || [ "$1" = "--help" ]; then print_usage; exit; fi
-if [ "$1" = "-v" ] || [ "$1" = "--version" ];     then print_version; exit; fi
-if [ "$1" = "-l" ] || [ "$1" = "--list" ];     then print_os_list; exit 1; fi
+if [ "$1" = "" ] || [ "$1" = "-h" ] || [ "$1" = "--help" ]; then usage; exit; fi
+if [ "$1" = "-v" ] || [ "$1" = "--version" ];     then version; exit; fi
+if [ "$1" = "-l" ] || [ "$1" = "--list" ];     then list_guest_os; exit 1; fi
 if [ "$1" = "-ex" ] || [ "$1" = "--sample" ];     then print_examples; exit 1; fi
 
 # The first parameter is the Guest OS Type
@@ -502,7 +509,7 @@ while [ "$1" != "" ]; do
         DEFAULT_QUIET="yes"
     ;;
     -v | --version )
-        print_version
+        version
     ;;
     -w | --working-dir )
         shift
@@ -524,9 +531,9 @@ while [ "$1" != "" ]; do
         DEFAULT_ZIPIT="yes"
     ;;
     * )
-        error "Euhm... what did you mean by \"$*\"?"
-        message "Run \"$PROGRAM_NAME -h\" for help"
-        message "Run \"$PROGRAM_NAME -ex\" for examples..."
+        log_error "Euhm... what did you mean by \"$*\"?"
+        log_message "Run \"$PROGRAM_NAME -h\" for help"
+        log_message "Run \"$PROGRAM_NAME -ex\" for examples..."
         
         exit 1
     esac
@@ -540,9 +547,9 @@ VM_DISK_NAME=$VM_DISK_TYPE-$VM_OS_TYPE.vmdk
 VM_VMX_FILE="$WRKDIR/$VM_OS_TYPE.vmx"
 
 # Print banner
-print_version
+version
 # Display summary
-print_summary
+show_summary
 # Do some tests
 run_tests
 
