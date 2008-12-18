@@ -20,15 +20,15 @@ Distributed under GPL license. No warranty whatsoever, express or implied."
 PROGRAM="$PROGRAM_NAME $PROGRAM_VER"
 LOGFILE=createvm.log
 BINARIES=(gzip tar vmware-vdiskmanager zip)
+BINARY_TESTS=yes
 
 # Default settings
 DEFAULT_QUIET=no        # Don't ask for confirmations, only when critical
 DEFAULT_YES=no          # Yes to al questions (warning: will overwrite existing files) 
 DEFAULT_ZIPIT=no        # Create .zip archive
 DEFAULT_TARGZIT=no      # Create .tar.gz archive 
-DEFAULT_START_VM=no      # Start VM after creating it
+DEFAULT_START_VM=no     # Start VM after creating it
 DEFAULT_WRKPATH=.       # Location where output will be
-BINARY_TESTS="FALSE"
 
 # Default VM parameters
 VM_CONF_VER=8           # VM Config version
@@ -151,6 +151,7 @@ Program Options:
  -l, --list                     Generate a list of VMware Guest OS'es
  -q, --quiet                    Runs without asking questions, accept the default values
  -y, --yes                      Say YES to all questions. This overwrites existing files!! 
+ -B, --binary                   Disable the check on binaries
  -x, -X                         Start the Virtual Machine in vmware, X for fullscreen
 
  -h, --help                     This help screen
@@ -297,7 +298,7 @@ function create_virtual_disk(){
     status_msg "Creating virtual disk...  "
 
     local adapter=buslogic
-    if [ "$VM_DISK_TYPE" = "IDE" ] ; then 
+    if [ "$VM_DISK_TYPE" = "IDE" ]; then 
          adapter=ide
     fi
     vmware-vdiskmanager -qq -c -a $adapter -t 1 -s $VM_DISK_SIZE "$WRKDIR/$VM_DISK_NAME" &> $LOGFILE
@@ -305,16 +306,14 @@ function create_virtual_disk(){
 }
 # Generate a zip file with the created VM (TODO: needs tar.gz too)
 function create_archive(){
-    if [ "$DEFAULT_ZIPIT" = "yes" ]; 
-    then
+    if [ "$DEFAULT_ZIPIT" = "yes" ]; then
         # Generate zipfile
         status_msg "Generate zip file...      "
         cd $DEFAULT_WRKPATH
         zip -q -r $VM_OUTP_FILE_ZIP $VM_NAME &> /dev/null
         status_check
     fi
-    if [ "$DEFAULT_TARGZIT" = "yes" ]; 
-    then
+    if [ "$DEFAULT_TARGZIT" = "yes" ]; then
         # Generate tar.gz file
         status_msg "Generate tar.gz file...   "
         cd $DEFAULT_WRKPATH
@@ -336,13 +335,11 @@ function run_os_test(){
     OS_SUPPORTED="no";
     for OS in ${SUPPORT_OS[@]}
     do 
-        if [ $OS = "$VM_OS_TYPE" ];
-        then
+        if [ $OS = "$VM_OS_TYPE" ]; then
             OS_SUPPORTED="yes";
         fi
     done
-    if [ ! $OS_SUPPORTED = "yes" ]; 
-    then
+    if [ ! $OS_SUPPORTED = "yes" ]; then
         error "Guest OS \"$VM_OS_TYPE\" is unknown..."
         message "Run \"$PROGRAM_NAME -l\" for a list of Guest OS'es..."
         message "Run \"$PROGRAM_NAME -h\" for help..."
@@ -353,18 +350,19 @@ function run_os_test(){
 # Check for binaries and existance of previously created VM's
 function run_tests(){
     # Check for needed binaries
-    info "Checking binaries..."
-    local app
-    for app in ${BINARIES[@]} ; do
-        status_msg ""
-        printf "    %-22s" "$app..."
-        which $app 1> /dev/null
-        status_check
-    done
+    if [ "$BINARY_TESTS" = "yes" ]; then
+        info "Checking binaries..."
+        local app
+        for app in ${BINARIES[@]} ; do
+            status_msg ""
+            printf "    %-22s" "$app..."
+            which $app 1> /dev/null
+            status_check
+        done
+    fi
     # Check if working dir file exists
     info "Checking files and directories..."
-    if [ -e "$WRKDIR" ]
-    then 
+    if [ -e "$WRKDIR" ]; then
         alert "Working dir already exists, i will trash it!"
         ask_no_oke
         status_msg "Trashing working dir...   "
@@ -372,10 +370,8 @@ function run_tests(){
         status_check
     fi
     # Check if zip file exists
-    if [ "$DEFAULT_ZIPIT" = "yes" ]; 
-    then
-        if [ -e $VM_OUTP_FILE_ZIP ]
-        then 
+    if [ "$DEFAULT_ZIPIT" = "yes" ]; then
+        if [ -e $VM_OUTP_FILE_ZIP ]; then 
             alert "Zipfile already exists, i will trash it!"
             ask_no_oke
             status_msg "Trashing zipfile...       "
@@ -384,10 +380,8 @@ function run_tests(){
         fi
     fi
     # Check if tar.gz file exists
-    if [ "$DEFAULT_TARGZIT" = "yes" ]; 
-    then
-        if [ -e $VM_OUTP_FILE_TAR ]
-        then 
+    if [ "$DEFAULT_TARGZIT" = "yes" ]; then
+        if [ -e $VM_OUTP_FILE_TAR ]; then 
             alert "tar.gz file already exists, i will trash it!"
             ask_no_oke
             status_msg "Trashing tar.gz file...   "
@@ -401,18 +395,15 @@ function clean_up(){
     # Back to base dir...
     cd - &> /dev/null
     # Clean up if zipped or tar-gzipped, and announce file location
-    if [ "$DEFAULT_ZIPIT" = "yes" ]; 
-    then 
+    if [ "$DEFAULT_ZIPIT" = "yes" ]; then 
         CLEANUP='yes'
         VMLOCATION="$VM_OUTP_FILE_ZIP $VMLOCATION"
     fi
-    if [ "$DEFAULT_TARGZIT" = "yes" ]; 
-    then 
+    if [ "$DEFAULT_TARGZIT" = "yes" ]; then 
         CLEANUP='yes'
         VMLOCATION="$VM_OUTP_FILE_TAR $VMLOCATION"
     fi
-    if [ "$CLEANUP" = "yes" ];
-    then
+    if [ "$CLEANUP" = "yes" ]; then
         status_msg "Cleaning up workingdir... "
         rm -rf $WRKDIR
         status_check
@@ -423,8 +414,7 @@ function clean_up(){
 }
 # Start VM if asked for 
 function start_vm(){
-    if [ "$DEFAULT_START_VM" = "yes" ];
-    then 
+    if [ "$DEFAULT_START_VM" = "yes" ]; then 
         info "Starting Virtual Machine..."
         vmware $VMW_OPT $VM_VMX_FILE
     fi
@@ -461,7 +451,7 @@ while [ "$1" != "" ]; do
         VM_NVRAM=$1
     ;;
     -B | --binary )
-        BINARY_TESTS="FALSE"
+        BINARY_TESTS=no
     ;;
     -c | --cdrom )
         VM_USE_CDD="TRUE"
