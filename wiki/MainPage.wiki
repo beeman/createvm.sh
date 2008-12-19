@@ -8,7 +8,7 @@ It supports a couple of command line parameters which allow you to configure the
 = Links =
   * [http://createvm.googlecode.com/svn/trunk/createvm.sh createvm.sh 0.6 - Development release]
   * [http://createvm.googlecode.com/svn/tags/0.5/createvm.sh createvm.sh 0.5 - Stable release]
-  * [http://createvm.googlecode.com/svn/tags/0.5/createvm.sh createvm.sh 0.4]
+  * [http://createvm.googlecode.com/svn/tags/0.4/createvm.sh createvm.sh 0.4]
   * [http://createvm.googlecode.com/svn/tags/0.3/createvm.sh createvm.sh 0.3]
   * [http://createvm.googlecode.com/svn/tags/0.3/createvm.sh createvm.sh 0.2]
 
