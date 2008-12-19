@@ -6,7 +6,9 @@
 It supports a couple of command line parameters which allow you to configure the VM you are creating. 
 
 = Links =
-  * [http://createvm.googlecode.com/svn/trunk/createvm.sh createvm.sh trunk]
+  * [http://createvm.googlecode.com/svn/trunk/createvm.sh createvm.sh 0.6 - Development release]
+  * [http://createvm.googlecode.com/svn/tags/0.5/createvm.sh createvm.sh 0.5 - Stable release]
+  * [http://createvm.googlecode.com/svn/tags/0.5/createvm.sh createvm.sh 0.4]
   * [http://createvm.googlecode.com/svn/tags/0.3/createvm.sh createvm.sh 0.3]
   * [http://createvm.googlecode.com/svn/tags/0.3/createvm.sh createvm.sh 0.2]
 
@@ -15,4 +17,3 @@ Here are some documents i'm working on not directly related to createvm.
 
   * [http://docs.google.com/Doc?id=dgzzd5gk_21dsxc68hj Linux Unattended]
   * [http://spreadsheets.google.com/pub?key=p4qgbE1Qe3fvd-vcYyIK2Ag Linux commands for VMware ESX]
-
