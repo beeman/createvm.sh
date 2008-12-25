@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 
 """ Todo
-- command line options need to be handled!
 - fix ask_oke / aks_no_oke . They now only accept the default value. Meta function
-- create zip and tar.gz archives
 - fetch errorlevels from os.system() calls and handle them
 - recreate log_status/check_status system
 - 
@@ -120,48 +118,6 @@ def ask_no_oke():
         return True
 
 ### Specific funtions ###
-
-def usage():
-    ''' Print Help message'''
-    print col_emw+program+" - "+program_title+col_reset
-    print "Usage:"+program_name+" GuestOS OPTIONS"
-    print """
-VM Options:
- -n, --name [NAME]              Friendly name of the VM       (default: <os-type>-vm)
- -r, --ram [SIZE]               RAM size in MB                (default: """+vm_ram+""")
- -d, --disk-size [SIZE]         HDD size in GB                (default: """+vm_disk_size+""")
- -t, --disk-type [TYPE]         HDD Interface, SCSI or IDE    (default: """+vm_disk_type+""")
- -e, --eth-type [TYPE]          Network Type (bridge/nat/etc) (default: """+vm_eth_type+""")
- -m, --mac-addr [ADDR]          Use static mac address        (address: 00:50:56:xx:xx:xx)
-
- -c, --cdrom                    Enable CDROM Drive
- -i, --iso [FILE]               Enable CDROM Iso
- -f, --floppy                   Enable Floppy Drive
- -a, --audio                    Enable sound card
- -u, --usb                      Enable USB
- -b, --bios [PATH]              Path to custom bios file
- 
- -vnc [PASSWD]:[PORT]           Enable vnc support for this VM
- 
-Program Options:
- -x [COMMAND]                   Start the VM with this command 
-
- -w, --working-dir [PATH]       Path to use as Working Dir    (default: current working dir)
- -z, --zip                      Create .zip from this VM
- -g, --tar-gz                   Create .tar.gz from this VM
-
- -l, --list                     Generate a list of VMware Guest OS'es
- -q, --quiet                    Runs without asking questions, accept the default values
- -y, --yes                      Say YES to all questions. This overwrites existing files!! 
- -B, --binary                   Disable the check on binaries
- -M, --monochrome               Don't use colors
- 
- -h, --help                     This help screen
- -v, --version                  Shows version information
- -ex, --sample                  Show some examples 
-"""
-    print "Dependencies:"
-    print "This program needs the following binaries in its path: ${BINARIES[@]}"
 
 def list_examples():
     ''' Show some examples '''
@@ -311,10 +267,15 @@ def create_virtual_disk(type='1'):
 
 def create_archive():
     ''' Create zip or tar.gz archive from the VM'''
-    if default_zip:
-        log_message('Cannot create zip archives yet')
-    if default_targz:
-        log_message('Cannot create tar.gz archives yet')
+    if options.zip:
+        log_status("Generate zip file...")
+        cmd = 'cd '+default_wrkpath+' ; zip -q -r "'+vm_zip_file+'" "'+vm_name+'" 1> /dev/null'
+        os.system(cmd)
+
+    if options.tar:
+        log_status("Generate tar file...")
+        cmd = 'cd '+default_wrkpath+' ; tar cvzf "'+vm_tar_file+'" "'+vm_name+'" 1> /dev/null'
+        os.system(cmd)
     pass
 
 def list_guest_os():
@@ -357,11 +318,31 @@ def run_tests():
         log_alert("Working dir already exists, i will trash it!")
         if ask_oke():
             log_info("Trashing working dir...   ")
-            os.system('rm -r '+vm_target)
+            os.system('rm -r "'+vm_target+'"')
         else:
-            print 'Leaving directory...'
+            log_error('Leaving directory...')
             tests_oke = False
 
+    if options.zip:
+        if os.path.exists(vm_zip_file):
+            log_alert("Zip file already exists, i will trash it!")
+            if ask_oke():
+                log_info("Trashing zip file...   ")
+                os.system('rm -r "'+vm_zip_file+'"')
+            else:
+                log_error('Keeping zip file...')
+                tests_oke = False
+        
+    if options.tar:
+        if os.path.exists(vm_tar_file):
+            log_alert("Tar file already exists, i will trash it!")
+            if ask_oke():
+                log_info("Trashing tar file...   ")
+                os.system('rm -r "'+vm_tar_file+'"')
+            else:
+                log_error('Keeping tar file...')
+                tests_oke = False
+                
     if tests_oke:
         return True
     else:
@@ -407,6 +388,9 @@ parser.add_option('-f', dest='fdd', action='store_true', help='Enable Floppy Dri
 parser.add_option('--vnc-pass', dest='vnc_pass', default='', help='VNC Password')
 parser.add_option('--vnc-port', dest='vnc_port', default='', help='VNC Port')
 
+parser.add_option('-z', dest='zip', action='store_true', help='Create .zip archive')
+parser.add_option('-g', dest='tar', action='store_true', help='Create .tar.gz archive')
+
 parser.add_option('-l',     dest='oslist',   action='store_true', help='List Guest Operating Systems')
 parser.add_option('--ex',   dest='examples', action='store_true', help='Show Examples')
 parser.add_option('--debug',dest='debug',    action='store_true', help='Enable Debugging')
@@ -429,12 +413,12 @@ options, args = parser.parse_args()
 version()
 
 # Show OS list on request
-if options.oslist==True:
+if options.oslist:
     list_guest_os()
     sys.exit()
 
 # Show examples on request
-if options.examples==True:
+if options.examples:
     list_examples()
     sys.exit()
 
