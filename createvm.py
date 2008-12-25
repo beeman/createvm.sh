@@ -21,6 +21,8 @@ program_copyright="Copyright 2007-2008. \
 Distributed under GPL V2 license. No warranty whatsoever, express or implied."
 program=program_name+' '+program_ver
 
+small_usage = 'Run "'+program_name+' -h" for help.'
+
 binaries=('gzip','tar','vmware-vdiskmanager','zip')
 binary_tests=True
 
@@ -35,8 +37,6 @@ default_wrkpath='.'        # Location where output will be
 # Default VM parameters
 vm_conf_ver = "8"
 vm_vmhw_ver = "4"
-vm_name = "ubuntu-vm"
-vm_os_type = "ubuntu"
 
 # These wil hold the configuration and summary
 vmx_config=''
@@ -184,7 +184,7 @@ Here are some examples:
 
 def summary_item(attr,value):
     global vmx_summary
-    line = "    "+attr.ljust(26)+"  "+col_emw+value+col_reset
+    line = "    "+attr.ljust(26)+"  "+col_emw+str(value)+col_reset
     if not vmx_summary is '':
         vmx_summary=vmx_summary+"\n"+line
     else:
@@ -212,8 +212,6 @@ def write_config():
 
 def create_conf():
     ''' Create the configuration file '''
-    log_status("Creating config file...   ")
-    
 
     add_config_param('config.version',vm_conf_ver)
     add_config_param('virtualHW.version',vm_vmhw_ver)
@@ -246,26 +244,26 @@ def create_conf():
         add_config_param('scsi0:0.present','TRUE')
         add_config_param('scsi0:0.fileName',vm_disk_name)
     
-    if vm_use_usb is 'True':
+    if vm_use_usb is True:
         summary_item("USB device",vm_use_usb)
         add_config_param('usb.present','TRUE')
         add_config_param('usb.generic.autoconnect','FALSE')
     
-    if vm_use_snd is 'True':
+    if vm_use_snd is True:
         summary_item("Sound Card",vm_use_snd)
         add_config_param('sound.present','TRUE')
         add_config_param('sound.fileName','-1')
         add_config_param('sound.autodetect','TRUE')
         add_config_param('sound.startConnected','FALSE')
     
-    if vm_use_fdd is 'True':
+    if vm_use_fdd is True:
         summary_item("Floppy disk", vm_use_fdd)
         add_config_param('floppy0.present','TRUE')
         add_config_param('floppy0.startConnected','FALSE')
     else:
         add_config_param('floppy0.present','FALSE')
     
-    if vm_use_cdd is 'True':
+    if vm_use_cdd is True:
         summary_item("CD/DVD drive",vm_use_cdd)
         add_config_param('ide0:1.present','TRUE')
         add_config_param('ide0:1.fileName','auto detect')
@@ -294,7 +292,6 @@ def create_conf():
         add_config_param('nvram',vm_nvram)
     
     add_config_param('annotation', 'This VM is created by '+program_name+' '+program_ver)
-    #write_config()
 
 def create_working_dir():
     ''' Create the dir where the VM will be placed '''
@@ -326,8 +323,6 @@ def list_guest_os():
     while(l>0):
         l-=3
         print support_os[l+2].ljust(25),support_os[l+1].ljust(25),support_os[l].ljust(25)
-        
-        
 
 def run_os_test(os):
     """ Check if the OS is in the list of supported guest OS'es
@@ -389,89 +384,102 @@ def small_help():
     log_message('Run "'+program_name+' -h"  for help...')
     log_message('Run "'+program_name+' --ex" for examples...')
 
-small_usage = 'Run "'+program_name+' -h" for help.'
+### Main Code ###
 
+# The parser is initialised
 parser = OptionParser(prog=program_name, usage=small_usage, version=program_name+" "+program_ver)
 
-parser.add_option('-n', dest='name',     type='string',  default='My VM',    action='store',
-                  help='Friendly name of the virtual machine')
-parser.add_option('-r', dest='ram',      type='int',     default='256',      action='store',
-                  help='RAM size in MB (default %default)')
-parser.add_option('-d', dest='disk_size',type='string',  default='8GB',        action='store',
-                  help='HDD size in GB (default %default)')
-parser.add_option('-t', dest='disk_type',type='string',  default='buslogic', action='store',
-                  help='HDD interface (default %default)')
-parser.add_option('-e', dest='eth_type', type='string',  default='bridged',  action='store',
-                  help='Network Type (default %default)')
-parser.add_option('-m', dest='mac',      type='string',  default='',         action='store',
-                  help='Use static mac address')
-parser.add_option('-b', dest='nvram',    type='string',  default='',         action='store',
-                  help='Path to BIOS file')
-parser.add_option('-i', dest='use_iso',  type='string',  default='',         action='store',
-                  help='Path to ISO file')
+# The options are added
+parser.add_option('-n', dest='name',        help='Friendly name of the virtual machine')
+parser.add_option('-r', dest='ram',         help='RAM size in MB (default %default)')
+parser.add_option('-d', dest='disk_size',   help='HDD size in GB (default %default)')
+parser.add_option('-t', dest='disk_type',   help='HDD interface (default %default)')
+parser.add_option('-e', dest='eth_type',    help='Network Type (default %default)')
+parser.add_option('-m', dest='mac',         help='Use static mac address')
+parser.add_option('-b', dest='nvram',       help='Path to BIOS file')
+parser.add_option('-i', dest='iso',         help='Path to ISO file')
 
-parser.add_option('-a','--audio',   dest='use_snd',  default=False,  action='store_true',
-                  help='Enable audio')
-parser.add_option('-u','--usb',     dest='use_usb',  default=False,  action='store_true',
-                  help='Enable USB')
-parser.add_option('-c','--cdd',     dest='use_cdd',  default=False,  action='store_false',
-                  help='Enable CD Drive')
-parser.add_option('-f','--fdd',     dest='use_fdd',  default=False,  action='store_false',
-                  help='Enable Floppy Drive')
+parser.add_option('-a', dest='snd', action='store_true', help='Enable audio')
+parser.add_option('-u', dest='usb', action='store_true', help='Enable USB')
+parser.add_option('-c', dest='cdd', action='store_true', help='Enable CD Drive')
+parser.add_option('-f', dest='fdd', action='store_true', help='Enable Floppy Drive')
 
-parser.add_option('--vnc-pass',     dest='vnc_pass',default='',type='string',  action='store',
-                  help='VNC Password')
-parser.add_option('--vnc-port',     dest='vnc_port',default='',type='string',  action='store',
-                  help='VNC Port')
+parser.add_option('--vnc-pass', dest='vnc_pass', default='', help='VNC Password')
+parser.add_option('--vnc-port', dest='vnc_port', default='', help='VNC Port')
 
-parser.add_option('-l','--list', dest='oslist', default=False, action='store_true', help='List Guest Operating Systems')
-parser.add_option('--ex', dest='examples', default=False, action='store_true', help='Show Examples')
-parser.add_option('--debug', dest='debug', default=False, action='store_true', help='Enable Debugging')
+parser.add_option('-l',     dest='oslist',   action='store_true', help='List Guest Operating Systems')
+parser.add_option('--ex',   dest='examples', action='store_true', help='Show Examples')
+parser.add_option('--debug',dest='debug',    action='store_true', help='Enable Debugging')
 
-parser.set_defaults(true=False )
+# We set our defaults
+parser.set_defaults(name='',
+                    ram='256',
+                    disk_size='8GB',
+                    disk_type='buslogic',
+                    eth_type='bridged',
+                    iso='',
+                    nvram='',
+                    mac='',
+                    )
+
+# Here the command line is parsed
 options, args = parser.parse_args()
-
-vm_ram = str(options.ram)
-vm_nvram = str(options.nvram)
-vm_eth_type = str(options.eth_type)
-vm_mac = str(options.mac)
-vm_disk_type = str(options.disk_type)
-vm_disk_size = str(options.disk_size)
-vm_use_usb = str(options.use_usb)
-vm_use_snd = str(options.use_snd)
-vm_use_iso = str(options.use_iso)
-vm_use_fdd = str(options.use_fdd)
-vm_use_cdd = str(options.use_cdd)
-vm_vnc_pass = str(options.vnc_pass)
-vm_vnc_port = str(options.vnc_port)
-
-vm_target = default_wrkpath+'/'+vm_name             # Parent dir for the VM
-vm_conf_file = vm_target+"/"+vm_os_type+".vmx"      # Location of VMX file 
-vm_disk_name = vm_disk_type+'-'+vm_os_type+'.vmdk'  # Name of VMDK file
-vm_disk_path = vm_target+'/'+vm_disk_name           # Path to VMDK file
-
-if options.oslist==True:
-    list_guest_os()
-    sys.exit()
-if options.examples==True:
-    list_examples()
-    sys.exit()
-
 
 # Print banner
 version()
 
+# Show OS list on request
+if options.oslist==True:
+    list_guest_os()
+    sys.exit()
+
+# Show examples on request
+if options.examples==True:
+    list_examples()
+    sys.exit()
+
 # This can probably be handled better by the optionparser
+# Figure out the Guest OS
 if len(args)<1:
     vm_os_type = raw_input('Enter guest OS: ')
 elif len(args)>1:
-    vm_os_type ('Please enter Guest OS as an argument!')
+    log_error('Please enter a Guest OS as an argument!')
     small_help()
-    exit
+    sys.exit()
 else:
     # Our one and only argument is the guest OS
     vm_os_type=args[0]
 
+# Here we react on our options
+if options.name is '':
+    vm_name = vm_os_type+'-vm'
+else:
+    vm_name = options.name
+
+# Command line options are mapped 
+vm_ram = options.ram
+vm_nvram = options.nvram
+vm_eth_type = options.eth_type
+vm_mac = options.mac
+vm_disk_type = options.disk_type
+vm_disk_size = options.disk_size
+vm_use_usb = options.usb
+vm_use_snd = options.snd
+vm_use_iso = options.iso
+vm_use_fdd = options.fdd
+vm_use_cdd = options.cdd
+vm_vnc_pass = options.vnc_pass
+vm_vnc_port = options.vnc_port
+
+# Some hocus pocus with paths and filenames
+vm_target = default_wrkpath+'/'+vm_name             # Parent dir for the VM
+vm_conf_file = vm_target+"/"+vm_os_type+".vmx"      # Location of VMX file 
+vm_disk_name = vm_disk_type+'-'+vm_os_type+'.vmdk'  # Name of VMDK file
+vm_disk_path = vm_target+'/'+vm_disk_name           # Path to VMDK
+vm_zip_file = default_wrkpath+'/'+vm_name+'.zip'    # Path to ZIP file
+vm_tar_file = default_wrkpath+'/'+vm_name+'.tar.gz' # Path to TAR file
+
+# This is the main program
 if run_os_test(vm_os_type):
     # Prepare the config
     create_conf()
@@ -487,8 +495,7 @@ if run_os_test(vm_os_type):
         # Create virtual disk
         create_virtual_disk()
         # Create archine
-        create_archive()
-            
+        create_archive()            
         # Clean up environment
         clean_up()
        # Run the VM
