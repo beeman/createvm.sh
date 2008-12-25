@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
 """ Todo
-- fix ask_oke / aks_no_oke . They now only accept the default value. Meta function
+- fix ask_oke / aks_no_oke, should listen to param -y/-q. Create meta function
 - fetch errorlevels from os.system() calls and handle them
 - recreate log_status/check_status system
-- 
+- enable option -x
 - 
 """
 
@@ -12,7 +12,7 @@ import os,sys
 from optparse import OptionParser
 
 # Program info
-program_name='createvm.py'
+program_name=os.path.basename(sys.argv[0])
 program_title="Create VMware virtual machines from the command line"
 program_ver="0.6"
 program_copyright="Copyright 2007-2008. \
@@ -26,9 +26,7 @@ binary_tests=True
 
 # Default settings
 default_quiet=False        # Don't ask for confirmations, only when critical
-default_yes=False        # Yes to al questions (warning: will overwrite existing files) 
-default_zip=False          # Create .zip archive
-default_targz=False        # Create .tar.gz archive 
+default_yes=False          # Yes to al questions (warning: will overwrite existing files) 
 default_start_vm=False     # Start VM after creating it
 default_wrkpath='.'        # Location where output will be
 
@@ -100,22 +98,33 @@ def log_error(msg):
 def ask_oke():
     ''' Ask if a user wants to continue, default to YES '''
     question = col_emw+"[?] Is it oke to continue?     "+col_emg+" [Yn] "+col_reset
-    answer = raw_input(question)
-    default = 'y'
-    if not answer is '':
-        sys.exit()
-    else:
-        return True
+    answered=False
+    while answered is False:
+        answer = raw_input(question).lower()
+        print answer
+        if answer == '' or answer == 'y' or answer == 'yes':
+            answered=True
+            return True
+        elif answer == 'n' or answer == 'no':
+            answered=True
+            return False
+        else:
+            print 'Please supply a valid answer'
 
 def ask_no_oke():
     ''' Ask if a user wants to continue, default to NO '''
-    default = ''
-    question = col_emw+"[?] Is it oke to continue?     "+col_emr+" [Ny] "+col_reset
-    answer = raw_input(question)
-    if answer is default:
-        sys.exit()
-    else:
-        return True
+    question = col_emw+"[?] Is it oke to continue?     "+col_emr+" [yN] "+col_reset
+    answered=False
+    while answered is False:
+        answer = raw_input(question).lower()
+        if answer == '' or answer == 'n' or answer == 'no':
+            answered=True
+            return False
+        elif answer == 'y' or answer == 'yes':
+            answered=True
+            return True
+        else:
+            print 'Please supply a valid answer'
 
 ### Specific funtions ###
 
@@ -151,7 +160,10 @@ def show_summary():
     global vmx_summary
     log_info("I am about to create this Virtual Machine:")
     print vmx_summary
-    ask_oke()
+    if ask_oke():
+        return True
+    else:
+        return False
 
 def add_config_param(attr,value):
     ''' Add configuration items to the list'''
@@ -316,17 +328,17 @@ def run_tests():
     log_info("Checking files and directories...")
     if os.path.exists(vm_target):
         log_alert("Working dir already exists, i will trash it!")
-        if ask_oke():
+        if ask_no_oke():
             log_info("Trashing working dir...   ")
             os.system('rm -r "'+vm_target+'"')
         else:
-            log_error('Leaving directory...')
+            log_error('Leaving directory in place...')
             tests_oke = False
 
     if options.zip:
         if os.path.exists(vm_zip_file):
             log_alert("Zip file already exists, i will trash it!")
-            if ask_oke():
+            if ask_no_oke():
                 log_info("Trashing zip file...   ")
                 os.system('rm -r "'+vm_zip_file+'"')
             else:
@@ -336,7 +348,7 @@ def run_tests():
     if options.tar:
         if os.path.exists(vm_tar_file):
             log_alert("Tar file already exists, i will trash it!")
-            if ask_oke():
+            if ask_no_oke():
                 log_info("Trashing tar file...   ")
                 os.system('rm -r "'+vm_tar_file+'"')
             else:
@@ -390,6 +402,9 @@ parser.add_option('--vnc-port', dest='vnc_port', default='', help='VNC Port')
 
 parser.add_option('-z', dest='zip', action='store_true', help='Create .zip archive')
 parser.add_option('-g', dest='tar', action='store_true', help='Create .tar.gz archive')
+
+parser.add_option('-y',     dest='yes',      action='store_true', help='Answer Yes to all questions')
+parser.add_option('-q',     dest='quiet',    action='store_true', help='Answer the default to all questions')
 
 parser.add_option('-l',     dest='oslist',   action='store_true', help='List Guest Operating Systems')
 parser.add_option('--ex',   dest='examples', action='store_true', help='Show Examples')
@@ -455,6 +470,9 @@ vm_use_cdd = options.cdd
 vm_vnc_pass = options.vnc_pass
 vm_vnc_port = options.vnc_port
 
+default_yes = options.yes
+default_quiet = options.quiet
+
 # Some hocus pocus with paths and filenames
 vm_target = default_wrkpath+'/'+vm_name             # Parent dir for the VM
 vm_conf_file = vm_target+"/"+vm_os_type+".vmx"      # Location of VMX file 
@@ -468,24 +486,24 @@ if run_os_test(vm_os_type):
     # Prepare the config
     create_conf()
     # Display summary
-    show_summary()
-    # Do some tests
-    if run_tests():
-        log_info("Creating Virtual Machine...")
-        # Create working environment
-        create_working_dir()
-        # Write config file
-        write_config()
-        # Create virtual disk
-        create_virtual_disk()
-        # Create archine
-        create_archive()            
-        # Clean up environment
-        clean_up()
-       # Run the VM
-        start_vm()
-    else:
-        log_error('Some tests failed :(')
+    if show_summary():
+        # Do some tests
+        if run_tests():
+            log_info("Creating Virtual Machine...")
+            # Create working environment
+            create_working_dir()
+            # Write config file
+            write_config()
+            # Create virtual disk
+            create_virtual_disk()
+            # Create archine
+            create_archive()            
+            # Clean up environment
+            clean_up()
+           # Run the VM
+            start_vm()
+        else:
+            log_error('Some tests failed :(')
 ### The End! ###
 
 if options.debug==True:
