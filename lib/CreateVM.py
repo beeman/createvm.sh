@@ -6,53 +6,6 @@ class CreateVM:
 
     def __init__(self):
         """Default constructor of CreateVM"""
-        self.defaults = { 
-                'quiet': False,
-                'accept': False,
-                'zip': False,
-                'tarball': False,
-                'start_vm': False,
-                'wrk_path': '.',
-        }
-
-        self.conf = {
-                'vm_conf_ver': "8",
-                'vm_vmhw_ver' : "4",
-                'vm_name' : "ubuntu-vm",
-                'vm_os_type' : "ubuntu",
-                'vm_ram' : "256",
-                'vm_nvram' : "nvram",
-                'vm_eth_type' : "bridged",
-                'vm_mac' : "default",
-                'vm_disk_type' : "buslogic",
-                'vm_disk_size' : "8GB",
-                'vm_use_usb' : "FALSE",
-                'vm_use_snd' : "FALSE",
-                'vm_use_iso' : "FALSE",
-                'vm_use_fdd' : "FALSE",
-                'vm_use_cdd' : "FALSE",
-                'vm_vnc_pass' : "FALSE",
-                'vm_vnc_port' : "5901",
-        }
-
-        self.conf_item = {
-                'vm_name' : "Display name",
-                'vm_os_type' : "OS type",
-                'vm_ram' : "RAM (Mb)",
-                'vm_nvram' : "BIOS",
-                'vm_eth_type' : "Ethernet type",
-                'vm_mac' : "Mac address",
-                'vm_disk_type' : "Disk type",
-                'vm_disk_size' : "Disk size (Gb)",
-                'vm_use_usb' : "USB",
-                'vm_use_snd' : "Audio",
-                'vm_use_iso' : "Image file",
-                'vm_use_fdd' : "Floppy drive",
-                'vm_use_cdd' : "CD/DVD drive",
-                'vm_vnc_pass' : "VNC password",
-                'vm_vnc_port' : "VNC port",
-        }
-
         self.os = ('winVista','longhorn','winNetBusiness','winNetEnterprise','winNetStandard',
             'winNetWeb','winXPPro','winXPHome','win2000AdvServ','win2000Serv','win2000Pro',
             'winNT','winMe','win98','win95','win31','windows','winVista-64','longhorn-64',
@@ -64,21 +17,41 @@ class CreateVM:
             'solaris6','solaris','netware6','netware5','netware4','netware','freeBSD-64',
             'freeBSD','darwin','other')
 
-        self.vmx_summary = list()
+        self.conf = {}
 
-    def show_conf_summary(self):
+    def print_conf(self, filename):
         ''' Show summary of configuration '''
-        for index, item in self.conf_item.items():
-            line = "    " + item.ljust(26)  + self.conf[index]
-            print line
+        for cat, item in self.conf.items():
+            if 'comment' in item:
+                print "\n## %s" % item['comment']
+                del item['comment']
+            for param, val in item.items():
+                print '%s.%s = "%s"' % (cat, param, val)
 
-    def change_conf(self, conf, val):
-        key = "vm_" + conf
-        self.conf[key] = val
+                
 
-    def create_conf(self):
-        pass
+    def _add_conf_param(self, index, val):
+        split_arr = index.split('.')
+        cat = split_arr[0]
+        index = split_arr[1]
+        if cat in self.conf:
+            config = self.conf[cat]
+        else:
+            config = dict();
+        config[index] = val
+        self.conf[cat] = config
+        print self.conf
 
-    def _add_conf_param(self):
-        pass
+    def add_sound(self, val):
+        if val is True:
+            bool = 'TRUE'
+        else:
+            bool = 'FALSE'
+
+        self._add_conf_param('sound.comment', 
+        """This add the sound properties to the VM""");
+        self._add_conf_param('sound.present', bool)
+        self._add_conf_param('sound.fileName', '-1')
+        self._add_conf_param('sound.autodetect', bool)
+        self._add_conf_param('sound.startConnected', bool)
 
