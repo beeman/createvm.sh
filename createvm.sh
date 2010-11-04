@@ -1,7 +1,7 @@
 #!/bin/bash
 # Author: Bram Borggreve ( borggreve @ gmail dot com )
 # Homepage: http://code.google.com/p/createvm/
-# License: GPL, see: http://www.gnu.org/copyleft/gpl.txt
+# License: GPL V2 or (at your option) any later version, see: http://www.gnu.org/copyleft/gpl.txt
 
 ### Todo ###
 # - Automatically register the VM with vmware server
@@ -14,7 +14,7 @@ PROGRAM_NAME=$(basename $0)
 PROGRAM_TITLE="Create VMware virtual machines from the command line"
 PROGRAM_VER="0.6"
 PROGRAM_COPYRIGHT="Copyright 2007-2008. \
-Distributed under GPL V2 license. No warranty whatsoever, express or implied."
+Distributed under GPL V2 or (at your option) any later version. No warranty whatsoever, express or implied."
 PROGRAM="$PROGRAM_NAME $PROGRAM_VER"
 LOGFILE=createvm.log
 BINARIES=(gzip tar vmware-vdiskmanager zip)
