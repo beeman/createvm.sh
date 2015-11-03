@@ -22,28 +22,33 @@ BINARY_TESTS=yes
 
 # Default settings
 DEFAULT_QUIET=no        # Don't ask for confirmations, only when critical
-DEFAULT_YES=no          # Yes to al questions (warning: will overwrite existing files) 
+DEFAULT_YES=no          # Yes to al questions (warning: will overwrite existing files)
 DEFAULT_ZIPIT=no        # Create .zip archive
-DEFAULT_TARGZIT=no      # Create .tar.gz archive 
+DEFAULT_TARGZIT=no      # Create .tar.gz archive
 DEFAULT_START_VM=no     # Start VM after creating it
 DEFAULT_WRKPATH=.       # Location where output will be
+DEFAULT_ESXI_SERVER=no  # Don't create remote vm
+DEFAULT_DATASTORE="datastore1" # When using esxi use this datastore
 
 # Default VM parameters
 VM_CONF_VER=8           # VM Config version
-VM_VMHW_VER=4           # VM Hardware version
+VM_VMHW_VER=8           # VM Hardware version
 VM_RAM=256              # Default RAM
 VM_NVRAM=nvram          # Default bios file
-VM_ETH_TYPE=bridged     # Default network type
+VM_ETH_TYPE=static      # Default network type
+VM_ETH_ADAPTER=e1000    # Default adapter to use
 VM_MAC_ADDR=default     # Default MAC address
 VM_DISK_SIZE=8          # Default DISK size (GB's)
 VM_DISK_TYPE=SCSI       # Default DISK type
 VM_USE_USB=FALSE        # Enable USB
 VM_USE_SND=FALSE        # Enable sound
 VM_USE_CDD=FALSE        # Enable CD drive
-VM_USE_ISO=FALSE        # Enable and load ISO 
+VM_USE_ISO=FALSE        # Enable and load ISO
 VM_USE_FDD=FALSE        # Enable and load FDD
 VM_VNC_PASS=FALSE       # VNC password
-VM_VNC_PORT=FALSE       # VNC port 
+VM_VNC_PORT=FALSE       # VNC port
+VM_NETWORK_NAME=FALSE   # Vlan network name to use
+VM_NUM_CPUS=FALSE       # Number of cpus (default 1)
 
 # This is the list of supported OS'es
 SUPPORT_OS=(winVista longhorn winNetBusiness winNetEnterprise winNetStandard \
@@ -147,6 +152,8 @@ VM Options:
  -t, --disk-type [TYPE]         HDD Interface, SCSI or IDE    (default: $VM_DISK_TYPE)
  -e, --eth-type [TYPE]          Network Type (bridge/nat/etc) (default: $VM_ETH_TYPE)
  -m, --mac-addr [ADDR]          Use static mac address        (address: 00:50:56:xx:xx:xx)
+ -ne,--network-name [NAME]      Network name (Vlan to use)    (default: none)
+ -cp,--cpu [NUM]                CPUs to allocate              (default: 1)
 
  -c, --cdrom                    Enable CDROM Drive            (default: $VM_USE_CDD)
  -i, --iso [FILE]               Enable CDROM Iso              (default: $VM_USE_ISO)
@@ -154,11 +161,11 @@ VM Options:
  -a, --audio                    Enable sound card             (default: $VM_USE_SND)
  -u, --usb                      Enable USB                    (default: $VM_USE_USB)
  -b, --bios [PATH]              Path to custom bios file      (default: $VM_NVRAM)
- 
+
  -vnc [PASSWD]:[PORT]           Enable vnc support for this VM
- 
+
 Program Options:
- -x [COMMAND]                   Start the VM with this command 
+ -x [COMMAND]                   Start the VM with this command
 
  -w, --working-dir [PATH]       Path to use as Working Dir    (default: current working dir)
  -z, --zip                      Create .zip from this VM
@@ -166,13 +173,15 @@ Program Options:
 
  -l, --list                     Generate a list of VMware Guest OS'es
  -q, --quiet                    Runs without asking questions, accept the default values
- -y, --yes                      Say YES to all questions. This overwrites existing files!! 
+ -y, --yes                      Say YES to all questions. This overwrites existing files!!
  -B, --binary                   Disable the check on binaries
  -M, --monochrome               Don't use colors
- 
+ -es, --esxi-server [fqdn]        Esxi server to ssh to
+ -da, --datastore               Datastore to use when esxi host is specified (default: $DEFAULT_DATASTORE)
+
  -h, --help                     This help screen
  -v, --version                  Shows version information
- -ex, --sample                  Show some examples 
+ -ex, --sample                  Show some examples
 
 Dependencies:
 This program needs the following binaries in its path: ${BINARIES[@]}"
@@ -184,19 +193,19 @@ function print_examples(){
 Here are some examples:
 
  Create an Ubuntu Linux machine with a 20GB hard disk and a different name
-   $ $PROGRAM_NAME ubuntu -d 20 -n \"My Ubuntu VM\" 
+   $ $PROGRAM_NAME ubuntu -d 20 -n \"My Ubuntu VM\"
 
  Silently create a SUSE Linux machine with 512MB ram, a fixed MAC address and zip it
-   $ $PROGRAM_NAME suse -r 512 -q -m 00:50:56:01:25:00 -z 
+   $ $PROGRAM_NAME suse -r 512 -q -m 00:50:56:01:25:00 -z
 
  Create a Windows XP machine with 512MB and audio, USB and CD enabled
-   $ $PROGRAM_NAME winXPPro -r 512 -a -u -c 
+   $ $PROGRAM_NAME winXPPro -r 512 -a -u -c
 
  Create an Ubuntu VM with 512MB and open and run it in vmware
    $ $PROGRAM_NAME ubuntu -r 512 -x \"vmware -x\""
 
 }
-    
+
 function _summary_item() {
     local item=$1
     shift;
@@ -241,12 +250,39 @@ function print_config() {
     echo -e $CONFIG_PARAM > "$VM_VMX_FILE"
 }
 
+function detect_esxi_version(){
+    if [ ! $DEFAULT_ESXI_SERVER = "no" ]; then
+        esxi_version=$(ssh $DEFAULT_ESXI_SERVER -l root 'vim-cmd hostsvc/hostsummary' 2> /dev/null | grep fullName | awk '{print $5}'| cut -c1-3 )
+        log_status "$esxi_version detected"
+    else
+        esxi_version='unused'
+    fi
+}
+
+
 # Create the .vmx file
 function create_conf(){
     log_status "Creating config file...   "
 
+    if [ $esxi_version = '4.1' ] || [ $esxi_version = '4.0' ];then
+        VM_VMHW_VER=7
+    fi
+
+    if [ $esxi_version = '5.1' ] ;then
+        VM_VMHW_VER=9
+    fi
+
+
+    if [ ! $VM_NUM_CPUS = "FALSE" ]; then
+        add_config_param numvcpus $VM_NUM_CPUS
+        if [ $esxi_version != '4.0' ];then
+            add_config_param cpuid.coresPerSocket $VM_NUM_CPUS
+        fi
+    fi
+
     add_config_param config.version $VM_CONF_VER
     add_config_param virtualHW.version $VM_VMHW_VER
+
     add_config_param displayName $VM_NAME
     add_config_param guestOS $VM_OS_TYPE
     add_config_param memsize $VM_RAM
@@ -260,7 +296,10 @@ function create_conf(){
     fi
 
     add_config_param ethernet0.present TRUE
+
     add_config_param ethernet0.connectionType $VM_ETH_TYPE
+    add_config_param ethernet0.virtualDev $VM_ETH_ADAPTER
+
 
     if [ ! $VM_MAC_ADDR = "default" ]; then
         add_config_param ethernet0.addressType static
@@ -269,10 +308,19 @@ function create_conf(){
         add_config_param ethernet0.addressType generated
     fi
 
+    if [ ! $VM_NETWORK_NAME = "FALSE" ]; then
+        add_config_param ethernet0.networkName $VM_NETWORK_NAME
+    fi
+
     if [ ! $VM_DISK_TYPE = "IDE" ]; then
+        add_config_param scsi0.present TRUE
+        add_config_param scsi0.sharedBus none
+        add_config_param scsi0.virtualDev lsilogic
+        add_config_param scsi0:0.deviceType scsi-hardDisk
         add_config_param scsi0:0.present TRUE
         add_config_param scsi0:0.fileName $VM_DISK_NAME
-    else 
+        add_config_param virtualHW.productCompatibility hosted
+    else
         add_config_param ide0:0.present TRUE
         add_config_param ide0:0.fileName $VM_DISK_NAME
     fi
@@ -316,8 +364,10 @@ function create_conf(){
         add_config_param remotedisplay.vnc.enabled TRUE
         add_config_param remotedisplay.vnc.port $VM_VNC_PORT
         add_config_param remotedisplay.vnc.password $VM_VNC_PASS
-	
+
     fi
+
+
 
     add_config_param annotation "This VM is created by $PROGRAM"
 
@@ -332,13 +382,29 @@ function create_working_dir(){
     mkdir -p "$WORKING_DIR" 1> /dev/null
     check_status
 }
+function transfer_conf(){
+    if [[ "$DEFAULT_ESXI_SERVER" != "no" ]];then
+        log_info "transfering conf to $DEFAULT_ESXI_SERVER ..."
+        log_status "transfering conf to $DEFAULT_ESXI_SERVER ..."
+        ssh root@$DEFAULT_ESXI_SERVER mkdir /vmfs/volumes/${DEFAULT_DATASTORE}/${VM_NAME}
+        scp $VM_VMX_FILE root@$DEFAULT_ESXI_SERVER:/vmfs/volumes/${DEFAULT_DATASTORE}/${VM_NAME}/
+        check_status
+    fi
+}
+
 # Create the virtual disk
 function create_virtual_disk(){
     log_status "Creating virtual disk...  "
     local adapter=buslogic
     [ "$VM_DISK_TYPE" = "IDE" ] && adapter=ide
-    vmware-vdiskmanager -c -a $adapter -t 1 -s $VM_DISK_SIZE "$WORKING_DIR/$VM_DISK_NAME" &> $LOGFILE
-    check_status
+    if [[ "$DEFAULT_ESXI_SERVER" != "no" ]];then
+        adapter=lsilogic
+        ssh root@$DEFAULT_ESXI_SERVER "vmkfstools /vmfs/volumes/${DEFAULT_DATASTORE}/$VM_NAME/$VM_DISK_NAME -U"
+        ssh root@$DEFAULT_ESXI_SERVER "vmkfstools -c $VM_DISK_SIZE /vmfs/volumes/${DEFAULT_DATASTORE}/$VM_NAME/$VM_DISK_NAME"
+    else
+        vmware-vdiskmanager -c -a $adapter -t 1 -s $VM_DISK_SIZE "$WORKING_DIR/$VM_DISK_NAME" &> $LOGFILE
+        check_status
+    fi
 }
 # Generate a zip or tar.gz archive
 function create_archive(){
@@ -369,7 +435,7 @@ function list_guest_os() {
 # Check if selected OS is in the OS list
 function run_os_test(){
     local OS
-    for OS in ${SUPPORT_OS[@]} ; do 
+    for OS in ${SUPPORT_OS[@]} ; do
         # Everything OK, no need to continue
         [ $OS = "$VM_OS_TYPE" ] && return
     done
@@ -403,7 +469,7 @@ function run_tests(){
     fi
     # Check if zip file exists
     if [ "$DEFAULT_ZIPIT" = "yes" ]; then
-        if [ -e "$VM_OUTP_FILE_ZIP" ]; then 
+        if [ -e "$VM_OUTP_FILE_ZIP" ]; then
             log_alert "zip file already exists, i will trash it!"
             ask_no_oke
             log_status "Trashing zip file...      "
@@ -413,7 +479,7 @@ function run_tests(){
     fi
     # Check if tar.gz file exists
     if [ "$DEFAULT_TARGZIT" = "yes" ]; then
-        if [ -e "$VM_OUTP_FILE_TAR" ]; then 
+        if [ -e "$VM_OUTP_FILE_TAR" ]; then
             log_alert "tar.gz file already exists, i will trash it!"
             ask_no_oke
             log_status "Trashing tar.gz file...   "
@@ -427,11 +493,11 @@ function clean_up(){
     # Back to base dir...
     cd - &> /dev/null
     # Clean up if zipped or tar-gzipped, and announce file location
-    if [ "$DEFAULT_ZIPIT" = "yes" ]; then 
+    if [ "$DEFAULT_ZIPIT" = "yes" ]; then
         CLEANUP='yes'
         VMLOCATION="$VM_OUTP_FILE_ZIP $VMLOCATION"
     fi
-    if [ "$DEFAULT_TARGZIT" = "yes" ]; then 
+    if [ "$DEFAULT_TARGZIT" = "yes" ]; then
         CLEANUP='yes'
         VMLOCATION="$VM_OUTP_FILE_TAR $VMLOCATION"
     fi
@@ -444,11 +510,25 @@ function clean_up(){
     fi
     log_info "Grab you VM here: $VMLOCATION"
 }
-# Start VM if asked for 
+# Start VM if asked for
 function start_vm(){
-    if [ "$DEFAULT_START_VM" = "yes" ]; then 
+    if [ "$DEFAULT_START_VM" = "yes" ]; then
+        if [[ "$DEFAULT_ESXI_SERVER" != "no" ]];then
+            vimid=`ssh root@$DEFAULT_ESXI_SERVER "vim-cmd vmsvc/getallvms 2>&1 |grep ${VM_NAME} | awk '{print $1}'"`
+            if [[ $vimid >1 ]];then
+                ssh root@$DEFAULT_ESXI_SERVER "vim-cmd vmsvc/reload $vimid"
+                log_info "Reloaded $vimid"
+            else
+                log_info "Registered $vimid"
+                ssh root@$DEFAULT_ESXI_SERVER "vim-cmd solo/registervm /vmfs/volumes/${DEFAULT_DATASTORE}/${VM_VMX_FILE}"
+            fi
+            vimid=`ssh root@$DEFAULT_ESXI_SERVER "vim-cmd vmsvc/getallvms 2>&1 |grep ${VM_NAME} | awk '{print $1}'"`
+            log_info "Powering on $vimid"
+            ssh root@$DEFAULT_ESXI_SERVER "vim-cmd vmsvc/power.on $vimid"
+        else
         log_info "Starting Virtual Machine..."
-        $VMW_BIN $VM_VMX_FILE
+            $VMW_BIN $VM_VMX_FILE
+        fi
     fi
 }
 
@@ -486,9 +566,17 @@ while [ "$1" != "" ]; do
     -c | --cdrom )
         VM_USE_CDD="TRUE"
     ;;
+    -cp | --cpu )
+        shift
+        VM_NUM_CPUS=$1
+    ;;
     -d | --disk-size )
         shift
         VM_DISK_SIZE=$1
+    ;;
+    -da | --datastore )
+        shift
+        DEFAULT_DATASTORE=$1
     ;;
     -e | --eth-type )
         shift
@@ -518,6 +606,10 @@ while [ "$1" != "" ]; do
         shift
         VM_NAME="$1"
     ;;
+    -nn | --network-name )
+        shift
+        VM_NETWORK_NAME="$1"
+    ;;
     -r | --ram )
         shift
         VM_RAM=$1
@@ -544,6 +636,11 @@ while [ "$1" != "" ]; do
     -w | --working-dir )
         shift
         DEFAULT_WRKPATH=$1
+    ;;
+    -es | --esxi-server )
+        shift
+        DEFAULT_ESXI_SERVER=$1
+        BINARY_TESTS=no
     ;;
     -x  )
         shift
@@ -574,7 +671,7 @@ VM_OUTP_FILE_TAR="$VM_NAME.tar.gz"
 WORKING_DIR="$DEFAULT_WRKPATH/$VM_NAME"
 VM_VMX_FILE="$WORKING_DIR/$VM_OS_TYPE.vmx"
 VM_DISK_NAME="$VM_DISK_TYPE-$VM_OS_TYPE.vmdk"
-VM_DISK_SIZE="$VM_DISK_SIZE""Gb"
+VM_DISK_SIZE="$VM_DISK_SIZE""G"
 
 # Print banner
 version
@@ -585,8 +682,13 @@ run_tests
 
 # Create working environment
 create_working_dir
+# Detect what esxi version is running
+detect_esxi_version
 # Write config file
 create_conf
+# Transfer the config to remote server esxi server
+transfer_conf
+
 # Create virtual disk
 create_virtual_disk
 # Create archine
